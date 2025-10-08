@@ -1,20 +1,19 @@
 {
   "name": "touralis/mis-fichajes",
-  "description": "Sistema de fichaje de empleados para Laravel",
+  "description": "Paquete de gestión de fichajes para Laravel",
   "type": "library",
-  "version": "1.0.0",
+  "license": "MIT",
   "authors": [
     {
       "name": "Tu Nombre",
-      "email": "tu@empresa.com"
+      "email": "tu@email.com"
     }
   ],
   "require": {
-    "php": "^8.1",
-    "illuminate/support": "^10.0|^11.0",
-    "illuminate/console": "^10.0|^11.0",
-    "illuminate/filesystem": "^10.0|^11.0",
-    "livewire/livewire": "^3.0"
+    "php": "^8.1|^8.2|^8.3",
+    "illuminate/support": "^10.0|^11.0|^12.0",
+    "illuminate/console": "^10.0|^11.0|^12.0",
+    "illuminate/filesystem": "^10.0|^11.0|^12.0"
   },
   "autoload": {
     "psr-4": {
