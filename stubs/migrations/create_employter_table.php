@@ -20,6 +20,7 @@ return new class extends Migration
       $table->string('telefono')->nullable();
       $table->string('password')->nullable();
       $table->string('puesto_trabajo');
+      $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
       $table->timestamps();
     });
   }
