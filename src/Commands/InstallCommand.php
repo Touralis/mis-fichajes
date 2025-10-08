@@ -22,7 +22,6 @@ class InstallCommand extends Command
    */
   public function handle(): int
   {
-    $this->info('¡Hola Mundo desde Mis Fichajes!');
     $this->info('Iniciando instalación del paquete...');
 
     // Copiar archivos
@@ -46,7 +45,7 @@ class InstallCommand extends Command
       $this->info('Copiando controladores...');
       File::copyDirectory(
         $packagePath . '/controllers',
-        $basePath . '/app/Http/Controllers/Fichajes'
+        $basePath . '/app/Http/Controllers'
       );
     }
 
@@ -56,6 +55,15 @@ class InstallCommand extends Command
       File::copyDirectory(
         $packagePath . '/models',
         $basePath . '/app/Models'
+      );
+    }
+
+    // Copiar vistas
+    if (File::exists($packagePath . '/views')) {
+      $this->info('Copiando vistas...');
+      File::copyDirectory(
+        $packagePath . '/views',
+        $basePath . '/resources/views/fichajes'
       );
     }
 
@@ -71,26 +79,35 @@ class InstallCommand extends Command
           $migration->getPathname(),
           $basePath . '/database/migrations/' . $filename
         );
-        $timestamp++; // Incrementar para evitar conflictos
+        $timestamp++;
       }
-    }
 
-    // Copiar vistas
-    if (File::exists($packagePath . '/views')) {
-      $this->info('Copiando vistas...');
-      File::copyDirectory(
-        $packagePath . '/views',
-        $basePath . '/resources/views/fichajes'
-      );
+      $this->info('Ejecutando migraciones...');
+      $this->call('migrate', ['--force' => true]);
     }
 
     // Copiar rutas
-    if (File::exists($packagePath . '/routes')) {
-      $this->info('Copiando archivo de rutas...');
-      File::copy(
-        $packagePath . '/routes/fichajes.php',
-        $basePath . '/routes/fichajes.php'
-      );
+    if (File::exists($packagePath . '/routes/fichajes.php')) {
+      $this->info('Añadiendo rutas al archivo web.php...');
+
+      $sourceFile = $packagePath . '/routes/fichajes.php';
+      $targetFile = $basePath . '/routes/web.php';
+
+      // Leer contenido de la ruta del paquete
+      $routesContent = File::get($sourceFile);
+
+      // Quitar la etiqueta PHP inicial y espacios en blanco
+      $routesContent = preg_replace('/^\s*<\?php\s*/', '', $routesContent);
+
+      // Verificar si ya existen las rutas (para evitar duplicados)
+      $webContent = File::get($targetFile);
+      if (strpos($webContent, trim($routesContent)) === false) {
+        // Añadir las rutas al final del archivo web.php con un comentario separador
+        File::append($targetFile, "\n\n// Rutas añadidas por Mis Fichajes\n" . $routesContent . "\n");
+        $this->info('✅ Rutas añadidas correctamente a web.php');
+      } else {
+        $this->warn('⚠️ Las rutas ya existen en web.php, no se duplicarán.');
+      }
     }
   }
 }
