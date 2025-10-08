@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FichajeController;
 
 Route::middleware(['web', 'auth'])

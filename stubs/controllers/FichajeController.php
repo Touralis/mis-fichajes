@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employer;
+use App\Models\FichajeEmployer;
 use App\Models\Fichaje;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
@@ -17,7 +17,7 @@ class FichajeController extends Controller
     $user = Auth::user();
 
     // Si no está autenticado o no tiene empleado asignado
-    $empleado = Employer::where('user_id', $user->id)->first();
+    $empleado = FichajeEmployer::where('user_id', $user->id)->first();
     if (!$empleado) {
       return dd('No tienes empleado asignado');
     }
@@ -83,7 +83,7 @@ class FichajeController extends Controller
       ->sortBy(fn($fichaje) => Carbon::parse($fichaje->dia_entrada, $timezone));
   }
 
-  private function estadisticas(Employer $empleado, Collection $fichajes)
+  private function estadisticas(FichajeEmployer $empleado, Collection $fichajes)
   {
     $timezone = 'Europe/Madrid';
     $hoy = Carbon::today($timezone);
