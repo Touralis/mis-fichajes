@@ -19,7 +19,19 @@ class FichajeController extends Controller
     // Si no está autenticado o no tiene empleado asignado
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
     if (!$empleado) {
-      return dd('No tienes empleado asignado');
+      FichajeEmployer::create([
+        'user_id' => $user->id,
+        'nombre' => $user->name,
+        'apellidos' => $user->name,
+        'dni' => $user->dni,
+        'mail' => $user->email,
+        'telefono' => $user->phone,
+        'password' => 'hola',
+        'puesto_trabajo' => 'Trabajo',
+        'horas_semanales' => 40,
+        'numero_afiliacion_ss' => 12345678,
+      ]);
+      return redirect()->route('fichajes.dashboard');
     }
 
     $fichajes = Fichaje::where('user_id', $user->id)->get();
