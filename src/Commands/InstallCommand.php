@@ -91,9 +91,6 @@ class InstallCommand extends Command
         $packagePath . '/routes/fichajes.php',
         $basePath . '/routes/fichajes.php'
       );
-
-      $this->warn('⚠️  No olvides incluir las rutas en routes/web.php:');
-      $this->line("   require __DIR__.'/fichajes.php';");
     }
   }
 }
