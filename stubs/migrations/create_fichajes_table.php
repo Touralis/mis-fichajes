@@ -13,7 +13,7 @@ return new class extends Migration
   {
     Schema::create('fichajes', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+      $table->foreignId('user_id');
       $table->enum('tipo', ['Trabajo', 'Descanso'])->default('Trabajo');
       $table->timestamp('dia_entrada')->nullable();
       $table->timestamp('dia_salida')->nullable();

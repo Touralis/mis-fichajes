@@ -18,9 +18,11 @@ class FichajeController extends Controller
 
     // Si no está autenticado o no tiene empleado asignado
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
+    $user_id = $user->id;
     if (!$empleado) {
+      // HAY QUE ARREGLAR ESTO PORQUE HACE BUCLE INFINITO
       FichajeEmployer::create([
-        'user_id' => $user->id,
+        'user_id' => $user_id,
         'nombre' => $user->name,
         'apellidos' => $user->name,
         'dni' => $user->dni,

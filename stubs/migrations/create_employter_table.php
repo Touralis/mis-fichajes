@@ -20,7 +20,9 @@ return new class extends Migration
       $table->string('telefono')->nullable();
       $table->string('password')->nullable();
       $table->string('puesto_trabajo');
-      $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+      $table->string('horas_semanales');
+      $table->string('numero_afiliacion_ss');
+      $table->foreignId('user_id');
       $table->timestamps();
     });
   }
