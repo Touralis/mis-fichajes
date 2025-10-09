@@ -16,26 +16,7 @@ class FichajeController extends Controller
   {
     $user = Auth::user();
 
-    // Si no está autenticado o no tiene empleado asignado
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
-    $user_id = $user->id;
-    if (!$empleado) {
-      // HAY QUE ARREGLAR ESTO PORQUE HACE BUCLE INFINITO
-      FichajeEmployer::create([
-        'user_id' => $user_id,
-        'nombre' => $user->name,
-        'apellidos' => $user->name,
-        'dni' => $user->dni,
-        'mail' => $user->email,
-        'telefono' => $user->phone,
-        'password' => 'hola',
-        'puesto_trabajo' => 'Trabajo',
-        'horas_semanales' => 40,
-        'numero_afiliacion_ss' => 12345678,
-      ]);
-      return redirect()->route('fichajes.dashboard');
-    }
-
     $fichajes = Fichaje::where('user_id', $user->id)->get();
     $ultimaSalida = $fichajes
       ->where('tipo', 'Trabajo')

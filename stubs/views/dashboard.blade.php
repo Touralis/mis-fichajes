@@ -1,5 +1,35 @@
-<div>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Fichajes</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Configuración opcional de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7BC6BF',
+                        secondary: '#F97316',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js -->
+    <script src="//unpkg.com/alpinejs" defer></script>
+
+    <!-- Livewire si lo necesitas -->
+    {{-- @livewireStyles y @livewireScripts solo si usas Livewire --}}
+</head>
+<body class="bg-gray-100 p-6"> 
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
         <div class="bg-white rounded-2xl shadow p-6 flex flex-col space-y-2">
             <div>
                 <h2 class="text-xl font-bold mb-1">Registro de horas</h2>
@@ -30,10 +60,7 @@
         <div class="bg-white rounded-2xl shadow p-6 flex flex-col h-full">
             <h2 class="text-xl font-bold mb-4">Estadísticas</h2>
             <div class="flex flex-col flex-1 justify-between space-y-4">
-                @php
-                    $stats = $estadisticas();
-                @endphp
-                @foreach ($stats as $stat)
+                @foreach ($estadisticas as $stat)
                     @php
                         $percentage = ($stat['current'] / $stat['max']) * 100;
                     @endphp
@@ -65,9 +92,6 @@
                 <div class="absolute left-2 top-0 bottom-0 w-0.5 bg-orange-300"></div>
                 <!-- Lista de actividades -->
                 <div class="space-y-6">
-                    @php
-                        $fichajesHoy = $fichajesHoy();
-                    @endphp
                     @if ($fichajesHoy->isEmpty())
                         <div class="relative flex items-start">
                             <div class="w-3 h-3 bg-orange-400 rounded-full border-2 border-white shadow-sm z-10"
@@ -165,5 +189,4 @@
             }
         }
     </script>
-
-</div>
+</body>
