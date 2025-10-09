@@ -4,6 +4,8 @@ namespace Touralis\MisFichajes\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class InstallCommand extends Command
 {
@@ -27,9 +29,86 @@ class InstallCommand extends Command
     // Copiar archivos
     $this->copyFiles();
 
+    // Crear usuario y empleado por defecto
+    $this->createDefaultUserAndEmployee();
+
     $this->info('✅ Paquete instalado correctamente');
 
     return self::SUCCESS;
+  }
+
+  /**
+   * Crear usuario y empleado por defecto
+   */
+  protected function createDefaultUserAndEmployee(): void
+  {
+    try {
+      // Verificar si el usuario por defecto ya existe
+      $userExists = DB::table('users')
+        ->where('email', 'admin@fichajes.test')
+        ->exists();
+
+      if ($userExists) {
+        $this->warn('⚠️ El usuario por defecto ya existe.');
+        return;
+      }
+
+      $this->info('Creando usuario y empleado por defecto...');
+
+      // Generar contraseña
+      $password = $this->generatePassword();
+      $hashedPassword = Hash::make($password);
+
+      // Crear usuario
+      $userId = DB::table('users')->insertGetId([
+        'name' => 'Administrador',
+        'email' => 'admin@fichajes.test',
+        'password' => $hashedPassword,
+        'email_verified_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+      ]);
+
+      // Crear empleado asociado
+      DB::table('fichaje_employers')->insert([
+        'nombre' => 'Admin',
+        'apellidos' => 'Sistema',
+        'dni' => '12345678A',
+        'mail' => 'admin@fichajes.test',
+        'telefono' => '000000000',
+        'password' => $hashedPassword,
+        'puesto_trabajo' => 'Administrador',
+        'horas_semanales' => '40',
+        'numero_afiliacion_ss' => '0000000000000000',
+        'user_id' => $userId,
+        'created_at' => now(),
+        'updated_at' => now(),
+      ]);
+
+      $this->info('✅ Usuario y empleado creados correctamente');
+      $this->line('');
+      $this->line('═══════════════════════════════════════');
+      $this->line('📧 Email: admin@fichajes.test');
+      $this->line('🔐 Contraseña: ' . $password);
+      $this->line('═══════════════════════════════════════');
+      $this->line('');
+    } catch (\Exception $e) {
+      $this->error('❌ Error al crear usuario y empleado por defecto: ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Generar una contraseña aleatoria de 12 caracteres
+   */
+  private function generatePassword(): string
+  {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < 12; $i++) {
+      $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
   }
 
   /**

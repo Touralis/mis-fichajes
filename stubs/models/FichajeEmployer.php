@@ -21,45 +21,9 @@ class FichajeEmployer extends Model
     'user_id'
   ];
 
-  public static function booted()
-  {
-    static::created(function ($model) {
-      $model->password = bcrypt(static::generatePassword());
-      $model->save();
-      $newUser = User::create([
-        'name' => $model->nombre,
-        'email' => $model->mail . 'prueba ' . rand(0, 1000),
-        'password' => bcrypt($model->password),
-        'role' => 'empleado',
-      ]);
-      $newUser->save();
-      $model->user_id = $newUser->id;
-      $model->save();
-    });
-
-    static::updated(function ($model) {
-      if ($model->user_id) {
-        $user = User::find($model->user_id);
-        if ($user) {
-          $user->name = $model->nombre;
-          $user->save();
-        }
-      }
-    });
-
-    static::deleted(function ($model) {
-      if ($model->user_id) {
-        $user = User::find($model->user_id);
-        if ($user) {
-          $user->delete();
-        }
-      }
-    });
-  }
-
   public function user()
   {
-    return $this->hasOne(User::class);
+    return $this->belongsTo(User::class);
   }
 
   public static function generatePassword()
