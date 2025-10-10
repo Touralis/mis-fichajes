@@ -23,6 +23,17 @@
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 <body class="bg-gray-100 p-6">
+  <!-- Botón de Cerrar sesión -->
+<form method="POST" action="{{ route('logout') }}" class="absolute top-6 right-6">
+    @csrf
+    <button
+        type="submit"
+        class="bg-red-500 text-white font-bold py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
+        style="background-color: #F97316;">
+        Cerrar sesión
+    </button>
+</form>
+
     <div class="max-w-7xl mx-auto space-y-6">
     <!-- TABLA DE FICHAJES -->
     <div class="bg-white rounded-2xl shadow p-6">
