@@ -110,6 +110,12 @@ if ($fichaje->dia_salida) {
                             <td class="py-3 px-4 text-gray-900 font-semibold">{{ $empleado->horas_diarias }}</td>
                             <td class="py-3 px-4 text-gray-700">{{ $empleado->telefono }}</td>
                             <td class="py-3 px-4 text-center space-x-2">
+                              <button
+@click="copiarContraseña('{{ $empleado->password }}')"
+class="text-blue-600 hover:text-blue-800 font-semibold transition-colors"
+                                >
+                                Copiar contraseña
+                              </button>
                                 <button
                                     @click="abrirModalEditar({
                                         id: {{ $empleado->id }},
@@ -343,6 +349,10 @@ function empleadosModal() {
             });
         }
     }
+}
+
+function copiarContraseña(password) {
+  navigator.clipboard.writeText(password);
 }
 </script>
 </body>

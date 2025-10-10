@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class FichajeController extends Controller
 {
@@ -165,6 +166,13 @@ class FichajeController extends Controller
   /**--- Admin ---**/
   public function indexAdmin()
   {
+    $user = Auth::user();
+    $empleado = FichajeEmployer::where('user_id', $user->id)->first();
+
+    if ($empleado) {
+      return redirect()->route('fichajes.dashboard');
+    }
+
     $fichajes = Fichaje::paginate(15);
     $empleados = FichajeEmployer::paginate(10);
 
@@ -189,6 +197,15 @@ class FichajeController extends Controller
 
     $password = FichajeEmployer::generatePassword();
 
+    $userId = DB::table('users')->insertGetId([
+      'name' => $validated['nombre'],
+      'email' => $validated['email'],
+      'password' => bcrypt($password),
+      'email_verified_at' => now(),
+      'created_at' => now(),
+      'updated_at' => now(),
+    ]);
+
     FichajeEmployer::create([
       'nombre' => $validated['nombre'],
       'apellidos' => $validated['apellidos'],
@@ -198,7 +215,8 @@ class FichajeController extends Controller
       'puesto_trabajo' => $validated['puesto_trabajo'],
       'horas_diarias' => $validated['horas_diarias'],
       'numero_afiliacion_ss' => $validated['numero_afiliacion_ss'],
-      'password' => bcrypt($password),
+      'password' => $password,
+      'user_id' => $userId,
     ]);
 
     return response()->json(['success' => true]);

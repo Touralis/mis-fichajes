@@ -25,9 +25,10 @@ class InstallCommand extends Command
   protected function createDefaultUserAndEmployee(): void
   {
     try {
-      $userExists = DB::table('users')->where('email', 'admin@fichajes.test')->exists();
-      if ($userExists) {
-        $this->warn('⚠️ El usuario por defecto ya existe.');
+      $adminExists = DB::table('users')->where('email', 'admin@fichajes.test')->exists();
+      $userExists = DB::table('users')->where('email', 'user@fichajes.test')->exists();
+      if ($userExists || $adminExists) {
+        $this->warn('⚠️ Los usuarios por defecto ya existen.');
         return;
       }
 
@@ -50,8 +51,8 @@ class InstallCommand extends Command
         'dni' => '12345678A',
         'mail' => 'user@fichajes.test',
         'telefono' => '000000000',
-        'password' => $hashedPassword,
-        'puesto_trabajo' => 'Administrador',
+        'password' => $password,
+        'puesto_trabajo' => 'Empleado',
         'horas_diarias' => '8',
         'numero_afiliacion_ss' => '0000000000000000',
         'user_id' => $userId,
@@ -79,7 +80,7 @@ class InstallCommand extends Command
         'updated_at' => now(),
       ]);
 
-      $this->info('✅ Usuario creado correctamente');
+      $this->info('✅ Administrador creado correctamente');
       $this->line('');
       $this->line('═══════════════════════════════════════');
       $this->line('📧 Email: admin@fichajes.test');
