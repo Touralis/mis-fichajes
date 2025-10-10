@@ -16,7 +16,9 @@ class InstallCommand extends Command
   {
     $this->info('Iniciando instalación del paquete...');
     $this->copyFiles();
-    $this->createDefaultUserAndEmployee();
+    if ($this->confirm('¿Desea crear usuarios por defecto?')) {
+      $this->createDefaultUserAndEmployee();
+    }
     $this->info('✅ Paquete instalado correctamente');
 
     return self::SUCCESS;
