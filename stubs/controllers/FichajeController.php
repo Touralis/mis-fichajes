@@ -17,6 +17,10 @@ class FichajeController extends Controller
     $user = Auth::user();
 
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
+    if (!$empleado) {
+      return redirect()->route('fichajes.dashboard.admin');
+    }
+
     $fichajes = Fichaje::where('user_id', $user->id)->get();
     $ultimaSalida = $fichajes
       ->where('tipo', 'Trabajo')
@@ -86,34 +90,152 @@ class FichajeController extends Controller
     $inicioMes = Carbon::now($timezone)->startOfMonth();
     $finMes = Carbon::now($timezone)->endOfMonth();
 
-    $horasHoy = $horasSemana = $horasMes = 0;
+    // Variables para acumular SEGUNDOS
+    $horasHoy = 0;
+    $horasSemana = 0;
+    $horasMes = 0;
 
     foreach ($fichajes as $fichaje) {
+      // Solo contar fichajes que tengan entrada Y salida
       if (!$fichaje->dia_salida) continue;
 
       $entrada = Carbon::parse($fichaje->dia_entrada, $timezone);
       $salida = Carbon::parse($fichaje->dia_salida, $timezone);
-      $segundos = $salida->diffInSeconds($entrada);
+      $segundos = abs($salida->diffInSeconds($entrada));
 
-      if ($entrada->isSameDay($hoy)) $horasHoy += $segundos;
-      if ($entrada->greaterThanOrEqualTo($inicioSemana)) $horasSemana += $segundos;
-      if ($entrada->greaterThanOrEqualTo($inicioMes)) $horasMes += $segundos;
+      // HOY: Solo fichajes que entraron hoy
+      if ($entrada->isSameDay($hoy)) {
+        $horasHoy += $segundos;
+      }
+
+      // SEMANA: Solo fichajes que entraron esta semana
+      if ($entrada->greaterThanOrEqualTo($inicioSemana) && $entrada->lessThan($inicioSemana->copy()->addWeek())) {
+        $horasSemana += $segundos;
+      }
+
+      // MES: Solo fichajes que entraron este mes
+      if ($entrada->greaterThanOrEqualTo($inicioMes) && $entrada->lessThanOrEqualTo($finMes)) {
+        $horasMes += $segundos;
+      }
     }
 
-    $horasHoyMax = $empleado->horas_semanales * 3600;
-    $horasSemanaMax = $empleado->horas_semanales * 5 * 3600;
+    // Para hoy: x horas diarias
+    $horasHoyMax = $empleado->horas_diarias * 3600;
 
-    $diasLaborables = $inicioMes->diffInDaysFiltered(
+    // Para la semana: 5 días laborables * x horas diarias
+    $diasLaborablesEstaSemana = $inicioSemana->copy()->addDays(6)->diffInDaysFiltered(
+      fn($date) => !$date->isWeekend(),
+      $inicioSemana,
+      true
+    ) + 1;
+    $horasSemanaMax = $diasLaborablesEstaSemana * $empleado->horas_diarias * 3600;
+
+    // Para el mes: días laborables del mes * x horas diarias
+    $diasLaborablesMes = $inicioMes->diffInDaysFiltered(
       fn($date) => !$date->isWeekend(),
       $finMes
     );
-
-    $horasMesMax = $diasLaborables * $empleado->horas_semanales * 3600;
+    $horasMesMax = $diasLaborablesMes * $empleado->horas_diarias * 3600;
 
     return [
-      ['label' => 'Hoy', 'current' => $horasHoy, 'max' => $horasHoyMax, 'total' => intval($horasHoyMax / 3600) . 'H'],
-      ['label' => 'Semana', 'current' => $horasSemana, 'max' => $horasSemanaMax, 'total' => intval($horasSemanaMax / 3600) . 'H'],
-      ['label' => 'Mes', 'current' => $horasMes, 'max' => $horasMesMax, 'total' => intval($horasMesMax / 3600) . 'H'],
+      [
+        'label' => 'Hoy',
+        'current' => $horasHoy,
+        'max' => $horasHoyMax,
+        'total' => intval($horasHoyMax / 3600) . 'H',
+        'percentage' => $horasHoyMax > 0 ? ($horasHoy / $horasHoyMax) * 100 : 0
+      ],
+      [
+        'label' => 'Semana',
+        'current' => $horasSemana,
+        'max' => $horasSemanaMax,
+        'total' => intval($horasSemanaMax / 3600) . 'H',
+        'percentage' => $horasSemanaMax > 0 ? ($horasSemana / $horasSemanaMax) * 100 : 0
+      ],
+      [
+        'label' => 'Mes',
+        'current' => $horasMes,
+        'max' => $horasMesMax,
+        'total' => intval($horasMesMax / 3600) . 'H',
+        'percentage' => $horasMesMax > 0 ? ($horasMes / $horasMesMax) * 100 : 0
+      ],
     ];
+  }
+
+  /**--- Admin ---**/
+  public function indexAdmin()
+  {
+    $fichajes = Fichaje::paginate(15);
+    $empleados = FichajeEmployer::paginate(10);
+
+    return view('fichajes.dashboard_admin', [
+      'fichajes' => $fichajes,
+      'empleados' => $empleados,
+    ]);
+  }
+
+  public function storeEmpleado(Request $request)
+  {
+    $validated = $request->validate([
+      'nombre' => 'required|string',
+      'apellidos' => 'required|string',
+      'email' => 'required|email|unique:fichaje_employers,mail',
+      'telefono' => 'required|string',
+      'dni' => 'required|string|unique:fichaje_employers,dni',
+      'puesto_trabajo' => 'required|string',
+      'horas_diarias' => 'required|numeric',
+      'numero_afiliacion_ss' => 'required|string',
+    ]);
+
+    $password = FichajeEmployer::generatePassword();
+
+    FichajeEmployer::create([
+      'nombre' => $validated['nombre'],
+      'apellidos' => $validated['apellidos'],
+      'mail' => $validated['email'],
+      'telefono' => $validated['telefono'],
+      'dni' => $validated['dni'],
+      'puesto_trabajo' => $validated['puesto_trabajo'],
+      'horas_diarias' => $validated['horas_diarias'],
+      'numero_afiliacion_ss' => $validated['numero_afiliacion_ss'],
+      'password' => bcrypt($password),
+    ]);
+
+    return response()->json(['success' => true]);
+  }
+
+  public function updateEmpleado(Request $request, $id)
+  {
+    $empleado = FichajeEmployer::findOrFail($id);
+
+    $validated = $request->validate([
+      'nombre' => 'required|string',
+      'apellidos' => 'required|string',
+      'email' => 'required|email|unique:fichaje_employers,mail,' . $id,
+      'telefono' => 'required|string',
+      'dni' => 'required|string|unique:fichaje_employers,dni,' . $id,
+      'puesto_trabajo' => 'required|string',
+      'horas_diarias' => 'required|numeric',
+      'numero_afiliacion_ss' => 'required|string',
+    ]);
+
+    $empleado->update([
+      'nombre' => $validated['nombre'],
+      'apellidos' => $validated['apellidos'],
+      'mail' => $validated['email'],
+      'telefono' => $validated['telefono'],
+      'dni' => $validated['dni'],
+      'puesto_trabajo' => $validated['puesto_trabajo'],
+      'horas_diarias' => $validated['horas_diarias'],
+      'numero_afiliacion_ss' => $validated['numero_afiliacion_ss'],
+    ]);
+
+    return response()->json(['success' => true]);
+  }
+
+  public function destroyEmpleado($id)
+  {
+    FichajeEmployer::findOrFail($id)->delete();
+    return redirect()->back()->with('success', 'Empleado eliminado correctamente');
   }
 }

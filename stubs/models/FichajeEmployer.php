@@ -16,7 +16,7 @@ class FichajeEmployer extends Model
     'telefono',
     'password',
     'puesto_trabajo',
-    'horas_semanales',
+    'horas_diarias',
     'numero_afiliacion_ss',
     'user_id'
   ];

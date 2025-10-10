@@ -1,3 +1,4 @@
+
  <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,7 +29,7 @@
     <!-- Livewire si lo necesitas -->
     {{-- @livewireStyles y @livewireScripts solo si usas Livewire --}}
 </head>
-<body class="bg-gray-100 p-6"> 
+<body class="bg-gray-100 p-6">
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
         <div class="bg-white rounded-2xl shadow p-6 flex flex-col space-y-2">
             <div>
@@ -47,40 +48,69 @@
                 @timer-updated.window="updateTimer($event.detail.startTime)">
                 <div class="text-center text-3xl font-bold mb-4" id="timer-text" x-text="display">
                 </div>
-                <button
-                    id="start-btn"
-                    class="mt-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
-                    style="background-color: #7BC6BF; padding: .8rem 1.5rem; border-radius: 30px;"
-                    wire:click="clickButton">
-                {{ $buttonText }}
-                </button>
+                <form method="POST" action="{{ route('fichajes.click') }}">
+        @csrf
+        <button
+            type="submit"
+            id="start-btn"
+            class="mt-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+            style="background-color: #7BC6BF; padding: .8rem 1.5rem; border-radius: 30px;">
+            {{ $buttonText }}
+        </button>
+    </form>
+                {{-- <button --}}
+                {{--     id="start-btn" --}}
+                {{--     class="mt-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors" --}}
+                {{--     style="background-color: #7BC6BF; padding: .8rem 1.5rem; border-radius: 30px;" --}}
+                {{--     wire:click="clickButton"> --}}
+                {{-- {{ $buttonText }} --}}
+                {{-- </button> --}}
             </div>
         </div>
 
+        {{-- <div class="bg-white rounded-2xl shadow p-6 flex flex-col h-full"> --}}
+        {{--     <h2 class="text-xl font-bold mb-4">Estadísticas</h2> --}}
+        {{--     <div class="flex flex-col flex-1 justify-between space-y-4"> --}}
+        {{--         @foreach ($estadisticas as $stat) --}}
+        {{--             <div class="flex flex-col border border-gray-200 rounded-lg p-4"> --}}
+        {{--                 <div class="flex items-center justify-between mb-1"> --}}
+        {{--                     <span class="text-xs font-semibold">{{ $stat['label'] }}</span> --}}
+        {{--                     <span class="text-s font-bold"> --}}
+        {{--                         {{ gmdate('H:i:s', $stat['current']) }} / {{ $stat['total'] }} --}}
+        {{--                     </span> --}}
+        {{--                 </div> --}}
+        {{--                 <!-- Barra de progreso --> --}}
+        {{--                 <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-2"> --}}
+        {{--                     <div class="h-full bg-blue-500 rounded-full transition-all duration-500" --}}
+        {{--                          style="width: {{ $percentage }}%; background-color: #7BC6BF;"> --}}
+        {{--                     </div> --}}
+        {{--                 </div> --}}
+        {{--             </div> --}}
+        {{--         @endforeach --}}
+        {{--     </div> --}}
+        {{-- </div> --}}
+
         <div class="bg-white rounded-2xl shadow p-6 flex flex-col h-full">
-            <h2 class="text-xl font-bold mb-4">Estadísticas</h2>
-            <div class="flex flex-col flex-1 justify-between space-y-4">
-                @foreach ($estadisticas as $stat)
-                    @php
-                        $percentage = ($stat['current'] / $stat['max']) * 100;
-                    @endphp
-                    <div class="flex flex-col border border-gray-200 rounded-lg p-4">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-semibold">{{ $stat['label'] }}</span>
-                            <span class="text-s font-bold">
-                                {{ gmdate('H:i:s', $stat['current']) }} / {{ $stat['total'] }}
-                            </span>
-                        </div>
-                        <!-- Barra de progreso -->
-                        <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-2">
-                            <div class="h-full bg-blue-500 rounded-full transition-all duration-500"
-                                 style="width: {{ $percentage }}%; background-color: #7BC6BF;">
-                            </div>
-                        </div>
+    <h2 class="text-xl font-bold mb-4">Estadísticas</h2>
+    <div class="flex flex-col flex-1 justify-between space-y-4">
+        @foreach ($estadisticas as $stat)
+            <div class="flex flex-col border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-semibold">{{ $stat['label'] }}</span>
+                    <span class="text-s font-bold">
+                        {{ gmdate('H:i:s', $stat['current']) }} / {{ $stat['total'] }}
+                    </span>
+                </div>
+                <!-- Barra de progreso -->
+                <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-2">
+                    <div class="h-full bg-blue-500 rounded-full transition-all duration-500"
+                         style="width: {{ min($stat['percentage'], 100) }}%; background-color: #7BC6BF;">
                     </div>
-                @endforeach
+                </div>
             </div>
-        </div>
+        @endforeach
+    </div>
+</div>
 
         <div class="bg-white rounded-2xl shadow p-6 h-full"
             style="max-height: 358px; overflow: hidden; overflow-y: scroll;"

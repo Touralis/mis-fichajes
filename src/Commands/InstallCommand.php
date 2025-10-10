@@ -36,7 +36,7 @@ class InstallCommand extends Command
       $hashedPassword = Hash::make($password);
 
       $userId = DB::table('users')->insertGetId([
-        'name' => 'Administrador',
+        'name' => 'Empleado Por Defecto',
         'email' => 'admin@fichajes.test',
         'password' => $hashedPassword,
         'email_verified_at' => now(),
@@ -45,21 +45,41 @@ class InstallCommand extends Command
       ]);
 
       DB::table('fichaje_employers')->insert([
-        'nombre' => 'Admin',
-        'apellidos' => 'Sistema',
+        'nombre' => 'Empleado',
+        'apellidos' => 'Por Defecto',
         'dni' => '12345678A',
-        'mail' => 'admin@fichajes.test',
+        'mail' => 'user@fichajes.test',
         'telefono' => '000000000',
         'password' => $hashedPassword,
         'puesto_trabajo' => 'Administrador',
-        'horas_semanales' => '40',
+        'horas_diarias' => '8',
         'numero_afiliacion_ss' => '0000000000000000',
         'user_id' => $userId,
         'created_at' => now(),
         'updated_at' => now(),
       ]);
 
-      $this->info('✅ Usuario y empleado creados correctamente');
+      $this->info('✅ Empleado creado correctamente');
+      $this->line('');
+      $this->line('═══════════════════════════════════════');
+      $this->line('📧 Email: user@fichajes.test');
+      $this->line('🔐 Contraseña: ' . $password);
+      $this->line('═══════════════════════════════════════');
+      $this->line('');
+
+      $password = $this->generatePassword();
+      $hashedPassword = Hash::make($password);
+
+      $userId = DB::table('users')->insertGetId([
+        'name' => 'Admin',
+        'email' => 'admin@fichajes.test',
+        'password' => $hashedPassword,
+        'email_verified_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+      ]);
+
+      $this->info('✅ Usuario creado correctamente');
       $this->line('');
       $this->line('═══════════════════════════════════════');
       $this->line('📧 Email: admin@fichajes.test');
