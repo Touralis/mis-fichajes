@@ -37,7 +37,7 @@ class InstallCommand extends Command
 
       $userId = DB::table('users')->insertGetId([
         'name' => 'Empleado Por Defecto',
-        'email' => 'admin@fichajes.test',
+        'email' => 'user@fichajes.test',
         'password' => $hashedPassword,
         'email_verified_at' => now(),
         'created_at' => now(),
