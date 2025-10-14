@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +20,7 @@
     </script>
     <script src="//unpkg.com/alpinejs" defer></script>
 </head>
+
 <body class="bg-gray-100 p-6 flex" x-data="mainData()" @open-laboral.window="abrirRegistroLaboral($event.detail)">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-lg border-r border-gray-200 h-screen fixed top-0 left-0">
@@ -28,21 +30,23 @@
                 <button @click="active = 'fichajes'"
                     class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors"
                     :class="{ 'bg-primary text-white': active === 'fichajes', 'text-gray-700 hover:bg-gray-100': active !== 'fichajes' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                     </svg>
+
                     Fichajes
                 </button>
                 <button @click="active = 'empleados'"
                     class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors"
                     :class="{ 'bg-primary text-white': active === 'empleados', 'text-gray-700 hover:bg-gray-100': active !== 'empleados' }">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17.982 18.725A20.003 20.003 0 0112 11.138a20.003 20.003 0 01-5.982 1.593M15 13a3 3 0 11-6 0 3 3 0 016 0zm-8 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                     </svg>
+
                     Empleados
                 </button>
                 <form method="POST" action="{{ route('logout') }}">
@@ -132,10 +136,14 @@
                                     <td class="py-3 px-4 text-gray-900">{{ $fichaje->id }}</td>
                                     <td class="py-3 px-4 text-gray-700">{{ $fichaje->user->name ?? 'Usuario' }}</td>
                                     <td class="py-3 px-4">
-                                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">{{ $fichaje->tipo }}</span>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">{{ $fichaje->tipo }}</span>
                                     </td>
-                                    <td class="py-3 px-4 text-gray-700">{{ \Carbon\Carbon::parse($fichaje->dia_entrada)->format('d/m/Y H:i') }}</td>
-                                    <td class="py-3 px-4 text-gray-700">{{ $fichaje->dia_salida ? \Carbon\Carbon::parse($fichaje->dia_salida)->format('d/m/Y H:i') : '-' }}</td>
+                                    <td class="py-3 px-4 text-gray-700">
+                                        {{ \Carbon\Carbon::parse($fichaje->dia_entrada)->format('d/m/Y H:i') }}</td>
+                                    <td class="py-3 px-4 text-gray-700">
+                                        {{ $fichaje->dia_salida ? \Carbon\Carbon::parse($fichaje->dia_salida)->format('d/m/Y H:i') : '-' }}
+                                    </td>
                                     <td class="py-3 px-4 text-gray-900 font-semibold">{{ $duracion }}</td>
                                 </tr>
                             @endforeach
@@ -160,7 +168,8 @@
             </button>
 
             <div class="bg-white rounded-2xl shadow p-6">
-                <h2 class="text-2xl font-bold mb-4">Registro Laboral - <span x-text="employerSelected?.nombre + ' ' + (employerSelected?.apellidos || '')"></span></h2>
+                <h2 class="text-2xl font-bold mb-4">Registro Laboral - <span
+                        x-text="employerSelected?.nombre + ' ' + (employerSelected?.apellidos || '')"></span></h2>
 
                 <!-- Filtros -->
                 <div class="mb-6 flex flex-wrap gap-4 items-end">
@@ -200,23 +209,31 @@
                                 <th class="border border-gray-300 px-4 py-3 text-left font-semibold">Fecha Salida</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-semibold">Tipo</th>
                                 <th class="border border-gray-300 px-4 py-3 text-left font-semibold">Duración</th>
-                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold">Geolocalización</th>
+                                <th class="border border-gray-300 px-4 py-3 text-left font-semibold">Geolocalización
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             <template x-if="fichajes.length > 0">
                                 <template x-for="fichaje in fichajes" :key="fichaje.id">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="border border-gray-300 px-4 py-3" x-text="formatDate(fichaje.dia_entrada)"></td>
-                                        <td class="border border-gray-300 px-4 py-3" x-text="fichaje.dia_salida ? formatDate(fichaje.dia_salida) : '-'"></td>
+                                        <td class="border border-gray-300 px-4 py-3"
+                                            x-text="formatDate(fichaje.dia_entrada)"></td>
+                                        <td class="border border-gray-300 px-4 py-3"
+                                            x-text="fichaje.dia_salida ? formatDate(fichaje.dia_salida) : '-'"></td>
                                         <td class="border border-gray-300 px-4 py-3">
-                                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800" x-text="fichaje.tipo"></span>
+                                            <span
+                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
+                                                x-text="fichaje.tipo"></span>
                                         </td>
-                                        <td class="border border-gray-300 px-4 py-3 font-semibold" x-text="calcularDuracion(fichaje)"></td>
+                                        <td class="border border-gray-300 px-4 py-3 font-semibold"
+                                            x-text="calcularDuracion(fichaje)"></td>
                                         <td class="border border-gray-300 px-4 py-3">
                                             <template x-if="fichaje.geolocalizacion">
-                                                <a :href="'https://www.google.com/maps/search/?api=1&query=' + fichaje.geolocalizacion"
-                                                    target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold">
+                                                <a :href="'https://www.google.com/maps/search/?api=1&query=' + fichaje
+                                                    .geolocalizacion"
+                                                    target="_blank"
+                                                    class="text-blue-600 hover:text-blue-800 font-semibold">
                                                     Ver en Google Maps
                                                 </a>
                                             </template>
@@ -229,7 +246,8 @@
                             </template>
                             <template x-if="fichajes.length === 0">
                                 <tr>
-                                    <td colspan="5" class="border border-gray-300 px-4 py-3 text-center text-gray-500">
+                                    <td colspan="5"
+                                        class="border border-gray-300 px-4 py-3 text-center text-gray-500">
                                         No hay registros para los filtros aplicados.
                                     </td>
                                 </tr>
@@ -268,16 +286,20 @@
                             @foreach ($empleados as $empleado)
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
                                     <td class="py-3 px-4 text-gray-900">{{ $empleado->id }}</td>
-                                    <td class="py-3 px-4 text-gray-900 font-semibold">{{ $empleado->nombre }} {{ $empleado->apellidos }}</td>
+                                    <td class="py-3 px-4 text-gray-900 font-semibold">{{ $empleado->nombre }}
+                                        {{ $empleado->apellidos }}</td>
                                     <td class="py-3 px-4 text-gray-700">{{ $empleado->mail }}</td>
                                     <td class="py-3 px-4 text-gray-700">{{ $empleado->puesto_trabajo }}</td>
-                                    <td class="py-3 px-4 text-gray-900 font-semibold">{{ $empleado->horas_diarias }}</td>
+                                    <td class="py-3 px-4 text-gray-900 font-semibold">{{ $empleado->horas_diarias }}
+                                    </td>
                                     <td class="py-3 px-4 text-gray-700">{{ $empleado->telefono }}</td>
                                     <td class="py-3 px-4 text-gray-700">
-                                        <span class="px-3 py-1 rounded-full text-xs font-semibold">{{ $empleado->password }}</span>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-semibold">{{ $empleado->password }}</span>
                                     </td>
                                     <td class="py-3 px-4 text-center space-x-2">
-                                        <button @click="$dispatch('open-laboral', {
+                                        <button
+                                            @click="$dispatch('open-laboral', {
                                             id: {{ $empleado->id }},
                                             nombre: '{{ $empleado->nombre }}',
                                             apellidos: '{{ $empleado->apellidos }}',
@@ -330,7 +352,8 @@
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-2xl font-bold"
                                 x-text="modoEdicion ? 'Editar Empleado' : 'Nuevo Empleado'"></h3>
-                            <button @click="cerrarModal()" class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                            <button @click="cerrarModal()"
+                                class="text-gray-500 hover:text-gray-700 text-2xl">×</button>
                         </div>
                         <form @submit.prevent="guardarEmpleado()" class="space-y-4">
                             @csrf
@@ -378,7 +401,8 @@
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Número de Afiliación SS</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Número de Afiliación
+                                    SS</label>
                                 <input type="text" x-model="formulario.numero_afiliacion_ss"
                                     name="numero_afiliacion_ss" placeholder="Número de afiliación" required
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
@@ -461,7 +485,10 @@
 
                 formatDate(dateString) {
                     const date = new Date(dateString);
-                    return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
                 },
 
                 calcularDuracion(fichaje) {
@@ -514,7 +541,9 @@
 
                 abrirModalEditar(empleado) {
                     this.modoEdicion = true;
-                    this.formulario = { ...empleado };
+                    this.formulario = {
+                        ...empleado
+                    };
                     this.openModal = true;
                 },
 
@@ -533,13 +562,14 @@
                     }
                     const method = this.modoEdicion ? 'PUT' : 'POST';
                     fetch(url, {
-                        method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value || '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify(this.formulario)
-                    })
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value ||
+                                    '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(this.formulario)
+                        })
                         .then(response => {
                             if (response.ok) {
                                 window.location.reload();
@@ -556,4 +586,5 @@
         }
     </script>
 </body>
+
 </html>
