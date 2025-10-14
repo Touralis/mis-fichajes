@@ -164,16 +164,30 @@ class FichajeController extends Controller
   }
 
   /**--- Admin ---**/
-  public function indexAdmin()
+  public function indexAdmin(Request $request)
   {
     $user = Auth::user();
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
+    $query = Fichaje::with('user');
 
     if ($empleado) {
       return redirect()->route('fichajes.dashboard');
     }
 
-    $fichajes = Fichaje::paginate(15);
+    if ($request->filled('nombre')) {
+      $query->whereHas('user', fn($q) => $q->where('name', 'like', "%{$request->nombre}%"));
+    }
+    if ($request->filled('tipo')) {
+      $query->where('tipo', 'like', "%{$request->tipo}%");
+    }
+    if ($request->filled('dia_entrada')) {
+      $query->where('dia_entrada', '>=', $request->dia_entrada);
+    }
+    if ($request->filled('dia_salida')) {
+      $query->where('dia_salida', '<=', $request->dia_salida);
+    }
+
+    $fichajes = $query->paginate(15)->withQueryString();
     $empleados = FichajeEmployer::paginate(10);
 
     return view('fichajes.dashboard_admin', [
@@ -255,5 +269,37 @@ class FichajeController extends Controller
   {
     FichajeEmployer::findOrFail($id)->delete();
     return redirect()->back()->with('success', 'Empleado eliminado correctamente');
+  }
+
+  public function downloadRegistroLaboral(string $employer_id)
+  {
+    $employer = FichajeEmployer::findOrFail($employer_id);
+    $user = DB::table('users')->where('id', $employer->user_id)->first();
+
+    // Filtros
+    $query = Fichaje::where('user_id', $user->id);
+
+    // Filtrado por año
+    $year = request('year', now()->year);
+    $query->whereYear('dia_entrada', $year);
+
+    // Filtrado por mes
+    $month = request('month');
+    if ($month) {
+      $query->whereMonth('dia_entrada', $month);
+    }
+
+    $fichajes = $query->orderBy('dia_entrada', 'asc')->get();
+
+    $fichajesPorDia = $fichajes->groupBy(function ($item) {
+      return \Carbon\Carbon::parse($item->dia_entrada)->format('Y-m-d'); // agrupamos por fecha
+    });
+
+    $html = view('fichajes.user-detail-page-download', compact('user', 'employer', 'fichajesPorDia', 'year', 'month'))->render();
+
+    $mpdf = new Mpdf();
+    $mpdf->WriteHTML($html);
+    $filename = "RegistroLaboral-" . ($employer->nombre ?? 'sin-nombre') . ".pdf";
+    return $mpdf->Output($filename, 'D');
   }
 }
