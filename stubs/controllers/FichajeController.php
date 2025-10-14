@@ -9,6 +9,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class FichajeController extends Controller
 {
@@ -271,9 +272,46 @@ class FichajeController extends Controller
     return redirect()->back()->with('success', 'Empleado eliminado correctamente');
   }
 
+  /**
+   * Obtener fichajes de un empleado con filtros
+   * Este método es llamado vía AJAX desde la sección laboral
+   */
+  public function getFichajes(Request $request)
+  {
+    $user_id = $request->query('user_id');
+    $month = $request->query('month');
+    $year = $request->query('year', now()->year);
+
+    if (!$user_id) {
+      return response()->json([]);
+    }
+
+    $query = Fichaje::where('user_id', $user_id);
+
+    // Filtrado por año
+    if ($year) {
+      $query->whereYear('dia_entrada', $year);
+    }
+
+    // Filtrado por mes
+    if ($month) {
+      $query->whereMonth('dia_entrada', $month);
+    }
+
+    $fichajes = $query->orderBy('dia_entrada', 'desc')->get();
+
+    return response()->json($fichajes);
+  }
+
+  /**
+   * Descargar registro laboral como PDF
+   */
   public function downloadRegistroLaboral(string $employer_id)
   {
     $employer = FichajeEmployer::findOrFail($employer_id);
+    if (!$employer) {
+      return response()->json(['success' => false, 'message' => 'No se encontró el empleador']);
+    }
     $user = DB::table('users')->where('id', $employer->user_id)->first();
 
     // Filtros
@@ -292,7 +330,7 @@ class FichajeController extends Controller
     $fichajes = $query->orderBy('dia_entrada', 'asc')->get();
 
     $fichajesPorDia = $fichajes->groupBy(function ($item) {
-      return \Carbon\Carbon::parse($item->dia_entrada)->format('Y-m-d'); // agrupamos por fecha
+      return \Carbon\Carbon::parse($item->dia_entrada)->format('Y-m-d');
     });
 
     $html = view('fichajes.user-detail-page-download', compact('user', 'employer', 'fichajesPorDia', 'year', 'month'))->render();
@@ -300,6 +338,7 @@ class FichajeController extends Controller
     $mpdf = new Mpdf();
     $mpdf->WriteHTML($html);
     $filename = "RegistroLaboral-" . ($employer->nombre ?? 'sin-nombre') . ".pdf";
+
     return $mpdf->Output($filename, 'D');
   }
 }

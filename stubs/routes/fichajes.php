@@ -10,4 +10,6 @@ Route::middleware(['web', 'auth'])
     Route::post('/fichajes/admin/storeEmpleado', [FichajeController::class, 'storeEmpleado'])->name('fichajes.admin.storeEmpleado');
     Route::put('/fichajes/admin/updateEmpleado/{id}', [FichajeController::class, 'updateEmpleado'])->name('fichajes.admin.updateEmpleado');
     Route::delete('/fichajes/admin/destroyEmpleado/{id}', [FichajeController::class, 'destroyEmpleado'])->name('fichajes.admin.destroyEmpleado');
+    Route::get('/fichajes/admin/downloadRegistroLaboral/{employer_id}', [FichajeController::class, 'downloadRegistroLaboral'])->name('fichajes.admin.downloadRegistroLaboral');
+    Route::get('/fichajes/admin/get-fichajes', [FichajeController::class, 'getFichajes'])->name('fichajes.admin.getFichajes');
   });
