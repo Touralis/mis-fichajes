@@ -16,12 +16,102 @@ class InstallCommand extends Command
   {
     $this->info('Iniciando instalación del paquete...');
     $this->copyFiles();
+
+    if ($this->confirm('¿Desea habilitar PWA en este proyecto?')) {
+      $this->installPwa();
+      $this->injectPwaInLayout();
+    }
+
     if ($this->confirm('¿Desea crear usuarios por defecto?')) {
       $this->createDefaultUserAndEmployee();
     }
     $this->info('✅ Paquete instalado correctamente');
 
     return self::SUCCESS;
+  }
+
+  protected function installPwa(): void
+  {
+    $this->info('Instalando soporte PWA...');
+
+    $packagePath = __DIR__ . '/../../stubs/pwa';
+    $publicPath = $this->laravel->publicPath();
+
+    // Manifest
+    if (!File::exists($publicPath . '/manifest.json')) {
+      File::copy(
+        $packagePath . '/manifest.json',
+        $publicPath . '/manifest.json'
+      );
+      $this->info('✅ manifest.json copiado');
+    } else {
+      $this->warn('⚠️ manifest.json ya existe');
+    }
+
+    // Service Worker
+    if (!File::exists($publicPath . '/sw.js')) {
+      File::copy(
+        $packagePath . '/sw.js',
+        $publicPath . '/sw.js'
+      );
+      $this->info('✅ sw.js copiado');
+    } else {
+      $this->warn('⚠️ sw.js ya existe');
+    }
+
+    // Icons
+    if (File::exists($packagePath . '/icons')) {
+      File::ensureDirectoryExists($publicPath . '/icons');
+
+      foreach (File::files($packagePath . '/icons') as $icon) {
+        $destination = $publicPath . '/icons/' . $icon->getFilename();
+        if (!File::exists($destination)) {
+          File::copy($icon->getPathname(), $destination);
+        }
+      }
+
+      $this->info('✅ Iconos PWA copiados');
+    }
+  }
+
+  protected function injectPwaInLayout(): void
+  {
+    $layouts = [
+      resource_path('views/layouts/app.blade.php'),
+      resource_path('views/layouts/main.blade.php'),
+    ];
+
+    $snippet = <<<HTML
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2563eb">
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
+</script>
+HTML;
+
+    foreach ($layouts as $layout) {
+      if (!File::exists($layout)) {
+        continue;
+      }
+
+      $content = File::get($layout);
+
+      if (str_contains($content, 'serviceWorker.register')) {
+        $this->warn("⚠️ PWA ya registrado en {$layout}");
+        continue;
+      }
+
+      $content = str_replace(
+        '</head>',
+        $snippet . PHP_EOL . '</head>',
+        $content
+      );
+
+      File::put($layout, $content);
+      $this->info("✅ PWA inyectado en {$layout}");
+    }
   }
 
   protected function createDefaultUserAndEmployee(): void
