@@ -31,16 +31,16 @@
  </head>
 
  <body class="bg-gray-100 p-6">
-   @if (Route::has('logout'))
-     <!-- Botón de Cerrar sesión -->
-     <form method="POST" action="{{ route('logout') }}" class="absolute top-6 right-6">
-         @csrf
-         <button type="submit"
-             class="bg-red-500 text-white font-bold py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
-             style="background-color: #F97316;">
-             Cerrar sesión
-         </button>
-     </form>
+     @if (Route::has('logout'))
+         <!-- Botón de Cerrar sesión -->
+         <form method="POST" action="{{ route('logout') }}" class="absolute top-6 right-6">
+             @csrf
+             <button type="submit"
+                 class="bg-red-500 text-white font-bold py-2 px-4 rounded-full hover:bg-red-600 transition-colors"
+                 style="background-color: #F97316;">
+                 Cerrar sesión
+             </button>
+         </form>
      @endif
 
      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
@@ -59,8 +59,12 @@
                  x-init="init()" @timer-updated.window="updateTimer($event.detail.startTime)">
                  <div class="text-center text-3xl font-bold mb-4" id="timer-text" x-text="display">
                  </div>
-                 <form method="POST" action="{{ route('fichajes.click') }}">
+                 <form method="POST" action="{{ route('fichajes.click') }}" x-data="geoForm()"
+                     x-init="getLocation()">
                      @csrf
+                     <input type="hidden" name="latitude" x-model="lat">
+                     <input type="hidden" name="longitude" x-model="lng">
+                     <input type="hidden" name="accuracy" x-model="accuracy">
                      <button type="submit" id="start-btn"
                          class="mt-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
                          style="background-color: #7BC6BF; padding: .8rem 1.5rem; border-radius: 30px;">
@@ -181,6 +185,40 @@
      </div>
 
      <script>
+         function geoForm() {
+             return {
+                 lat: null,
+                 lng: null,
+                 accuracy: null,
+                 loading: true,
+
+                 getLocation() {
+                     if (!navigator.geolocation) {
+                         console.warn('Geolocalización no soportada');
+                         this.loading = false;
+                         return;
+                     }
+
+                     navigator.geolocation.getCurrentPosition(
+                         (position) => {
+                             this.lat = position.coords.latitude;
+                             this.lng = position.coords.longitude;
+                             this.accuracy = position.coords.accuracy;
+                             this.loading = false;
+                         },
+                         (error) => {
+                             console.error('Error obteniendo ubicación', error);
+                             this.loading = false;
+                         }, {
+                             enableHighAccuracy: true,
+                             timeout: 10000,
+                             maximumAge: 0
+                         }
+                     );
+                 }
+             }
+         }
+
          function timerComponent(startTime) {
              return {
                  startTime,

@@ -61,13 +61,13 @@
                     </a>
                 @endif
                 @if (Route::has('logout'))
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="bg-red-500 text-white font-bold py-2 px-4 rounded-full hover:bg-red-600 transition-colors">
-                        Cerrar sesión
-                    </button>
-                </form>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="bg-red-500 text-white font-bold py-2 px-4 rounded-full hover:bg-red-600 transition-colors">
+                            Cerrar sesión
+                        </button>
+                    </form>
                 @endif
             </nav>
         </div>
@@ -129,6 +129,8 @@
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Entrada</th>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Salida</th>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Duración</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700">Geolocalización Entrada</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700">Geolocalización Salida</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,6 +160,28 @@
                                         {{ $fichaje->dia_salida ? \Carbon\Carbon::parse($fichaje->dia_salida)->format('d/m/Y H:i') : '-' }}
                                     </td>
                                     <td class="py-3 px-4 text-gray-900 font-semibold">{{ $duracion }}</td>
+                                    <td class="py-3 px-4 text-gray-700">
+                                        @if ($fichaje->geolocalizacion)
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $fichaje->geolocalizacion }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                                                Ver en Google Maps
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">Sin ubicación</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-3 px-4 text-gray-700">
+                                        @if ($fichaje->geolocalizacionExit)
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $fichaje->geolocalizacionExit }}"
+                                                target="_blank"
+                                                class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                                                Ver en Google Maps
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">Sin ubicación</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

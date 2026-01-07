@@ -17,6 +17,7 @@ class Fichaje extends Model
     'dia_entrada',
     'dia_salida',
     'geolocalizacion',
+    'geolocalizacionExit',
   ];
 
   public function user()

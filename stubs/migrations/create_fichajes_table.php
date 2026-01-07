@@ -17,6 +17,8 @@ return new class extends Migration
       $table->enum('tipo', ['Trabajo', 'Descanso'])->default('Trabajo');
       $table->timestamp('dia_entrada')->nullable();
       $table->timestamp('dia_salida')->nullable();
+      $table->string('geolocalizacion')->nullable();
+      $table->string('geolocalizacionExit')->nullable();
       $table->timestamps();
     });
   }

@@ -54,6 +54,7 @@ class FichajeController extends Controller
   {
     $timezone = 'Europe/Madrid';
     $user = Auth::user();
+    $geolocalizacion = $request->latitude . ',' . $request->longitude;
 
     $ultimo = Fichaje::orderBy('id', 'desc')->where('user_id', $user->id)->first();
 
@@ -61,10 +62,12 @@ class FichajeController extends Controller
       Fichaje::create([
         'user_id' => $user->id,
         'dia_entrada' => Carbon::now($timezone)->format('Y-m-d H:i:s'),
+        'geolocalizacion' => $geolocalizacion,
       ]);
     } else {
       $ultimo->update([
         'dia_salida' => Carbon::now($timezone)->format('Y-m-d H:i:s'),
+        'geolocalizacionExit' => $geolocalizacion,
       ]);
     }
 
