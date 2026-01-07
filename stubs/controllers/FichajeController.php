@@ -71,6 +71,22 @@ class FichajeController extends Controller
     return redirect()->route('fichajes.dashboard');
   }
 
+  /**
+   * Descargar APK de la aplicación
+   */
+  public function downloadApk()
+  {
+    $apkPath = public_path('app.apk');
+
+    if (!file_exists($apkPath)) {
+      abort(404, 'APK no disponible');
+    }
+
+    return response()->download($apkPath, 'MisFichajes.apk', [
+      'Content-Type' => 'application/vnd.android.package-archive',
+    ]);
+  }
+
   private function fichajesHoy(Collection $fichajes)
   {
     $timezone = 'Europe/Madrid';

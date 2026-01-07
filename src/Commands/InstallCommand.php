@@ -22,12 +22,47 @@ class InstallCommand extends Command
       $this->injectPwaInLayout();
     }
 
+    if ($this->confirm('¿Desea añadir una APK para descarga?')) {
+      $this->installApk();
+    }
+
     if ($this->confirm('¿Desea crear usuarios por defecto?')) {
       $this->createDefaultUserAndEmployee();
     }
     $this->info('✅ Paquete instalado correctamente');
 
     return self::SUCCESS;
+  }
+
+  protected function installApk(): void
+  {
+    $this->info('📱 Instalación de APK');
+
+    $apkPath = $this->ask('Introduce la ruta absoluta del archivo APK');
+
+    if (!File::exists($apkPath)) {
+      $this->error('❌ El archivo no existe en la ruta especificada');
+      return;
+    }
+
+    if (!str_ends_with(strtolower($apkPath), '.apk')) {
+      $this->error('❌ El archivo debe tener extensión .apk');
+      return;
+    }
+
+    $publicPath = $this->laravel->publicPath();
+    $destinationPath = $publicPath . '/app.apk';
+
+    try {
+      File::copy($apkPath, $destinationPath);
+      $this->info('✅ APK copiada correctamente a public/app.apk');
+
+      $fileSize = File::size($destinationPath);
+      $fileSizeMB = round($fileSize / 1024 / 1024, 2);
+      $this->line("📦 Tamaño del archivo: {$fileSizeMB} MB");
+    } catch (\Exception $e) {
+      $this->error('❌ Error al copiar la APK: ' . $e->getMessage());
+    }
   }
 
   protected function installPwa(): void
