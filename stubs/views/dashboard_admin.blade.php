@@ -60,6 +60,7 @@
                         Descargar APK
                     </a>
                 @endif
+                @if (Route::has('logout'))
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
@@ -67,6 +68,7 @@
                         Cerrar sesión
                     </button>
                 </form>
+                @endif
             </nav>
         </div>
     </aside>

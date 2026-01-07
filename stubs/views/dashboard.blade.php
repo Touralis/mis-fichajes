@@ -31,6 +31,7 @@
  </head>
 
  <body class="bg-gray-100 p-6">
+   @if (Route::has('logout'))
      <!-- Botón de Cerrar sesión -->
      <form method="POST" action="{{ route('logout') }}" class="absolute top-6 right-6">
          @csrf
@@ -40,6 +41,7 @@
              Cerrar sesión
          </button>
      </form>
+     @endif
 
      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
          <div class="bg-white rounded-2xl shadow p-6 flex flex-col space-y-2">
