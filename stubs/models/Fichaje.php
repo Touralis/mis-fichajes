@@ -9,7 +9,7 @@ class Fichaje extends Model
 {
   use HasFactory;
 
-  protected $table = 'fichajes';
+  protected $table = 'fichajes_fichajes';
 
   protected $fillable = [
     'user_id',

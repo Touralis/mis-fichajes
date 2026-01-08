@@ -11,7 +11,7 @@ return new class extends Migration
    */
   public function up(): void
   {
-    Schema::create('fichajes', function (Blueprint $table) {
+    Schema::create('fichajes_fichajes', function (Blueprint $table) {
       $table->id();
       $table->foreignId('user_id');
       $table->enum('tipo', ['Trabajo', 'Descanso'])->default('Trabajo');
