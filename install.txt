@@ -1,0 +1,10 @@
+"repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/Touralis/mis-fichajes"
+    }
+  ],
+
+
+composer require touralis/mis-fichajes:dev-master
+php artisan touralis-misfichajes:install
