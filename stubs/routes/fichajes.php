@@ -13,4 +13,6 @@ Route::middleware(['web', 'auth'])
     Route::get('/fichajes/admin/downloadRegistroLaboral/{employer_id}', [FichajeController::class, 'downloadRegistroLaboral'])->name('fichajes.admin.downloadRegistroLaboral');
     Route::get('/fichajes/admin/get-fichajes', [FichajeController::class, 'getFichajes'])->name('fichajes.admin.getFichajes');
     Route::get('/fichajes/download-apk', [FichajeController::class, 'downloadApk'])->name('fichajes.downloadApk');
+    Route::post('/fichajes/admin/configuracion', [FichajeController::class, 'updateConfiguracion'])
+      ->name('fichajes.admin.configuracion.update');
   });

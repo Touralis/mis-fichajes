@@ -169,11 +169,25 @@
 
     <table class="firmas">
         <tr>
-            <td>
-                <p>Firma Empresa</p>
+            @if ($config && $config->firma_empresa)
+                <td style="text-align:center; padding:0; margin:0;">
+                    <strong>Firma Empresa</strong>
+                    <br><br>
 
-            </td>
-            <td>
+                    @php
+                        $firmaEmpresaPath = storage_path('app/public/' . $config->firma_empresa);
+                    @endphp
+
+                    @if (file_exists($firmaEmpresaPath))
+                        <img src="{{ $firmaEmpresaPath }}" style="height:120px;">
+                    @endif
+                </td>
+            @else
+                <td style="text-align:center;">
+                    <strong>Firma Empresa</strong>
+                </td>
+            @endif
+            <td style="text-align:center">
                 <p>Firma Trabajador</p>
             </td>
         </tr>

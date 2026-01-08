@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Mpdf\Mpdf;
+use Illuminate\Support\Facades\Storage;
+use App\Models\FichajesConfiguracion;
 
 class FichajeController extends Controller
 {
@@ -19,7 +21,7 @@ class FichajeController extends Controller
     $user = Auth::user();
 
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
-    if (!$empleado) {
+    if (!$empleado && ($user->fichajes_role !== 'user')) {
       return redirect()->route('fichajes.dashboard.admin');
     }
 
@@ -352,12 +354,42 @@ class FichajeController extends Controller
       return \Carbon\Carbon::parse($item->dia_entrada)->format('Y-m-d');
     });
 
-    $html = view('fichajes.user-detail-page-download', compact('user', 'employer', 'fichajesPorDia', 'year', 'month'))->render();
+    $config = FichajesConfiguracion::first();
+
+    $html = view('fichajes.user-detail-page-download', compact('user', 'employer', 'fichajesPorDia', 'year', 'month', 'config'))->render();
 
     $mpdf = new Mpdf();
     $mpdf->WriteHTML($html);
     $filename = "RegistroLaboral-" . ($employer->nombre ?? 'sin-nombre') . ".pdf";
 
     return $mpdf->Output($filename, 'D');
+  }
+
+  public function updateConfiguracion(Request $request)
+  {
+    $config = FichajesConfiguracion::firstOrCreate([]);
+
+    $data = [
+      'geolocalizacion' => $request->has('geolocalizacion'),
+    ];
+
+    if ($request->hasFile('firma_empresa')) {
+      // borrar imagen anterior
+      if ($config->firma_empresa) {
+        Storage::disk('public')->delete($config->firma_empresa);
+      }
+
+      $path = $request->file('firma_empresa')
+        ->store('firmas', 'public');
+
+      $data['firma_empresa'] = $path;
+    }
+
+    $config->update($data);
+
+    return response()->json([
+      'success' => true,
+      'message' => 'Configuración guardada correctamente'
+    ]);
   }
 }
