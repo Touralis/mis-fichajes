@@ -229,6 +229,52 @@ HTML;
     return $randomString;
   }
 
+  protected function ensureFichajesRoleInUser(): void
+  {
+    // Rutas posibles del modelo User
+    $paths = [
+      $this->laravel->basePath('app/Models/User.php'),
+      $this->laravel->basePath('app/User.php'),
+    ];
+
+    foreach ($paths as $path) {
+      if (!File::exists($path)) {
+        continue;
+      }
+
+      $content = File::get($path);
+
+      // Ya está añadido
+      if (str_contains($content, "'fichajes_role'")) {
+        $this->info("ℹ️ 'fichajes_role' ya está en fillable de User");
+        return;
+      }
+
+      // Buscar $fillable
+      if (preg_match('/protected\s+\$fillable\s*=\s*\[([^\]]*)\];/s', $content, $matches)) {
+        $fillableContent = trim($matches[1]);
+
+        if ($fillableContent !== '') {
+          $fillableContent .= ", 'fichajes_role'";
+        } else {
+          $fillableContent = "'fichajes_role'";
+        }
+
+        $newFillable = "protected \$fillable = [{$fillableContent}];";
+        $content = str_replace($matches[0], $newFillable, $content);
+
+        File::put($path, $content);
+        $this->info("✅ 'fichajes_role' añadido al fillable de User");
+      } else {
+        $this->warn("⚠️ No se encontró \$fillable en User.php, por favor añade 'fichajes_role' manualmente.");
+      }
+
+      // Solo modificamos el primero que exista
+      break;
+    }
+  }
+
+
   protected function copyFiles(): void
   {
     $packagePath = __DIR__ . '/../../stubs';
@@ -258,6 +304,7 @@ HTML;
         }
         File::copy($file->getPathname(), $destination);
       }
+      $this->ensureFichajesRoleInUser();
     }
 
     // --- Copiar vistas ---
