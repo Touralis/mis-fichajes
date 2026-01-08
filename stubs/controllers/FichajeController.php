@@ -23,6 +23,8 @@ class FichajeController extends Controller
     $empleado = FichajeEmployer::where('user_id', $user->id)->first();
     if (!$empleado && ($user->fichajes_role !== 'user')) {
       return redirect()->route('fichajes.dashboard.admin');
+    } else if (!$empleado) {
+      return redirect()->back();
     }
 
     $fichajes = Fichaje::where('user_id', $user->id)->get();

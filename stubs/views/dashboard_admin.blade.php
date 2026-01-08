@@ -88,6 +88,17 @@
                     </svg>
                     Configuración
                 </button>
+                @if (Route::has('logout'))
+         <!-- Botón de Cerrar sesión -->
+         <form method="POST" action="{{ route('logout') }}">
+             @csrf
+             <button type="submit"
+                 class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors"
+                 >
+                 Cerrar sesión
+             </button>
+         </form>
+     @endif
                 <!-- Los enlaces de descarga y logout se mantienen aquí si son relevantes -->
             </nav>
             <!-- Botón de cierre para móviles -->

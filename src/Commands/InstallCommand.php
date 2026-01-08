@@ -203,6 +203,7 @@ HTML;
         'email' => 'admin@fichajes.test',
         'password' => $hashedPassword,
         'email_verified_at' => now(),
+        'fichajes_role' => 'admin',
         'created_at' => now(),
         'updated_at' => now(),
       ]);
