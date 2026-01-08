@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FichajeEmployer;
-use App\Models\Fichaje;
+use App\Models\FichajeFichaje as Fichaje;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
