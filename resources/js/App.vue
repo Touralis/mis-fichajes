@@ -20,7 +20,7 @@ async function clock(){busy.value=true;error.value='';try{await request('/api/cl
 function openEmployee(employee=null){editing.value=employee?.id || null; form.value=employee ? {...employee,password:''} : {name:'',email:'',password:'',position:'',identity_number:'',social_security_number:'',daily_hours:8,role:'employee',active:true};error.value='';modal.value=true}
 async function save(){busy.value=true;error.value='';try{await request(editing.value ? `/api/employees/${editing.value}` : '/api/employees',{method:editing.value?'PUT':'POST',body:JSON.stringify(form.value)});modal.value=false;await load()}catch(e){error.value=e.message}finally{busy.value=false}}
 const admin=computed(()=>user.value?.role==='admin');
-const date=computed(()=>new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(now.value))); 
+const date=computed(()=>new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(now.value)));
 const fmt=(v, opts={day:'2-digit',month:'short',year:'numeric'})=>v ? new Intl.DateTimeFormat('es-ES',opts).format(new Date(v)) : '—';
 const time=v=>fmt(v,{hour:'2-digit',minute:'2-digit'});
 const hours=r=>r.ended_at ? `${Math.floor((new Date(r.ended_at)-new Date(r.started_at))/3600000)}h ${String(Math.floor((new Date(r.ended_at)-new Date(r.started_at))/60000)%60).padStart(2,'0')}m` : 'En curso';
