@@ -1,0 +1,22 @@
+<?php
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\LaborRecordController;
+use App\Http\Controllers\CompanySettingsController;
+use Illuminate\Support\Facades\Route;
+Route::view('/', 'app');
+Route::post('/login', [AttendanceController::class, 'login'])->middleware('throttle:10,1');
+Route::middleware('auth')->group(function () {
+ Route::post('/logout', [AttendanceController::class, 'logout']);
+ Route::get('/api/company-settings', [CompanySettingsController::class, 'show']);
+ Route::post('/api/company-settings', [CompanySettingsController::class, 'save']);
+ Route::get('/api/company-settings/signature', [CompanySettingsController::class, 'signature']);
+ Route::get('/api/state', [AttendanceController::class, 'state']);
+ Route::post('/api/clock', [AttendanceController::class, 'clock']);
+ Route::post('/api/employees', [AttendanceController::class, 'saveEmployee']);
+ Route::put('/api/employees/{employee}', [AttendanceController::class, 'saveEmployee']);
+ Route::get('/api/records', [LaborRecordController::class, 'index']);
+ Route::get('/api/records/pdf', [LaborRecordController::class, 'pdf']);
+ Route::put('/api/records/{record}', [LaborRecordController::class, 'update']);
+ Route::get('/api/records/{record}/history', [LaborRecordController::class, 'history']);
+ Route::get('/api/export', [AttendanceController::class, 'export']);
+});
