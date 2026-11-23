@@ -6,13 +6,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\File;
 class CompanySettingsController extends Controller {
  private function admin(Request $request): void { abort_unless($request->user()->role === 'admin',403); }
- public function show(Request $request) { $this->admin($request); $settings=DB::table('company_settings')->where('id',1)->first(); return response()->json(['name'=>$settings->name ?? '', 'tax_id'=>$settings->tax_id ?? '', 'address'=>$settings->address ?? '', 'email'=>$settings->email ?? '', 'phone'=>$settings->phone ?? '', 'has_signature'=>!empty($settings->signature_path) && Storage::disk('local')->exists($settings->signature_path)]); }
+ public function show(Request $request) { $this->admin($request); $settings=DB::table('company_settings')->where('id',1)->first(); return response()->json(['name'=>$settings->name ?? '', 'tax_id'=>$settings->tax_id ?? '', 'address'=>$settings->address ?? '', 'email'=>$settings->email ?? '', 'phone'=>$settings->phone ?? '', 'allow_attendance_generation'=>(bool)($settings->allow_attendance_generation ?? false), 'has_signature'=>!empty($settings->signature_path) && Storage::disk('local')->exists($settings->signature_path)]); }
  public function save(Request $request) {
   $this->admin($request);
-  $data=$request->validate(['name'=>'nullable|string|max:255','tax_id'=>'nullable|string|max:50','address'=>'nullable|string|max:255','email'=>'nullable|email|max:255','phone'=>'nullable|string|max:50','signature'=>['nullable',File::image()->types(['png','jpg','jpeg'])->max('2mb')], 'remove_signature'=>'nullable|boolean']);
+  $data=$request->validate(['name'=>'nullable|string|max:255','tax_id'=>'nullable|string|max:50','address'=>'nullable|string|max:255','email'=>'nullable|email|max:255','phone'=>'nullable|string|max:50','signature'=>['nullable',File::image()->types(['png','jpg','jpeg'])->max('2mb')], 'remove_signature'=>'nullable|boolean','allow_attendance_generation'=>'nullable|boolean']);
   $old=DB::table('company_settings')->where('id',1)->value('signature_path');
   $new=$request->hasFile('signature') ? $request->file('signature')->store('company-signatures','local') : ($request->boolean('remove_signature') ? null : $old);
-  try { DB::table('company_settings')->updateOrInsert(['id'=>1],['name'=>$data['name'] ?? null,'tax_id'=>$data['tax_id'] ?? null,'address'=>$data['address'] ?? null,'email'=>$data['email'] ?? null,'phone'=>$data['phone'] ?? null,'signature_path'=>$new,'updated_at'=>now()]); }
+  try { DB::table('company_settings')->updateOrInsert(['id'=>1],['name'=>$data['name'] ?? null,'tax_id'=>$data['tax_id'] ?? null,'address'=>$data['address'] ?? null,'email'=>$data['email'] ?? null,'phone'=>$data['phone'] ?? null,'signature_path'=>$new,'allow_attendance_generation'=>$request->boolean('allow_attendance_generation'),'updated_at'=>now()]); }
   catch (\Throwable $e) { if ($new && $new !== $old) Storage::disk('local')->delete($new); throw $e; }
   if ($old && $old !== $new) Storage::disk('local')->delete($old);
   return $this->show($request);

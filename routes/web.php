@@ -14,6 +14,8 @@ Route::middleware('auth')->group(function () {
  Route::post('/api/clock', [AttendanceController::class, 'clock']);
  Route::post('/api/employees', [AttendanceController::class, 'saveEmployee']);
  Route::put('/api/employees/{employee}', [AttendanceController::class, 'saveEmployee']);
+ Route::post('/api/records/generate/preview', [\App\Http\Controllers\AttendanceGenerationController::class, 'preview']);
+ Route::post('/api/records/generate', [\App\Http\Controllers\AttendanceGenerationController::class, 'store']);
  Route::get('/api/records', [LaborRecordController::class, 'index']);
  Route::get('/api/records/pdf', [LaborRecordController::class, 'pdf']);
  Route::put('/api/records/{record}', [LaborRecordController::class, 'update']);

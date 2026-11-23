@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+mobile-app/node_modules
+mobile-app/build-*.apk
+public/fichajes.apk
