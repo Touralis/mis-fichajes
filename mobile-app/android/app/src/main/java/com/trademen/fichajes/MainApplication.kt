@@ -1,4 +1,4 @@
-package com.mareleventos.fichajes
+package com.trademen.fichajes
 
 import android.app.Application
 import android.content.res.Configuration

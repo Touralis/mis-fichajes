@@ -1,0 +1,2 @@
+  primary: "#0082F3",
+  accent: "#67b6f7",

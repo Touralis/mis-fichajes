@@ -13,6 +13,7 @@ done
 
 printf 'Datos de la instalación de Mis Fichajes\n'
 read -r -p 'URL completa del subdominio (ej. https://fichajes.ejemplo.com): ' DEPLOY_URL
+read -r -p 'Identificador de la app móvil (ej. com.empresa.fichajes): ' MOBILE_APP_ID
 read -r -p 'Host de la base de datos [127.0.0.1]: ' DEPLOY_DB_HOST
 DEPLOY_DB_HOST=${DEPLOY_DB_HOST:-127.0.0.1}
 read -r -p 'Puerto de la base de datos [3306]: ' DEPLOY_DB_PORT
@@ -22,6 +23,7 @@ read -r -p 'Usuario de la base de datos: ' DEPLOY_DB_USERNAME
 read -r -s -p 'Contraseña de la base de datos (puede estar vacía): ' DEPLOY_DB_PASSWORD
 printf '\n'
 [[ "$DEPLOY_URL" =~ ^https?://[^[:space:]/]+(/[^[:space:]]*)?$ ]] || { echo 'La URL debe empezar por http:// o https://.' >&2; exit 1; }
+[[ "$MOBILE_APP_ID" =~ ^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9]*)+$ ]] || { echo 'Identificador de app inválido. Usa al menos dos partes separadas por puntos, por ejemplo com.empresa.fichajes; cada parte debe empezar por una letra y contener solo letras o números.' >&2; exit 1; }
 [[ "$DEPLOY_DB_PORT" =~ ^[0-9]+$ ]] && (( DEPLOY_DB_PORT >= 1 && DEPLOY_DB_PORT <= 65535 )) || { echo 'Puerto inválido.' >&2; exit 1; }
 [[ -n "$DEPLOY_DB_DATABASE" && -n "$DEPLOY_DB_USERNAME" ]] || { echo 'El nombre y el usuario de la base de datos son obligatorios.' >&2; exit 1; }
 export DEPLOY_URL DEPLOY_DB_HOST DEPLOY_DB_PORT DEPLOY_DB_DATABASE DEPLOY_DB_USERNAME DEPLOY_DB_PASSWORD
@@ -134,11 +136,14 @@ OUTPUT="$PROJECT_DIR/misfichajes-$(date +%Y%m%d-%H%M%S)-$$.zip"
 mkdir -p "$TMP_DIR/mobile-icons"
 cp -- mobile-app/constants/branding.ts "$TMP_DIR/branding.ts"
 node scripts/configurar-mobile.mjs "$TMP_DIR/branding.ts" "$DEPLOY_URL" "$PRIMARY_COLOR" "$ACCENT_COLOR"
+cp -- mobile-app/app.json "$TMP_DIR/mobile-app.json"
+node scripts/configurar-mobile-id.mjs "$TMP_DIR/mobile-app.json" "$MOBILE_APP_ID"
 if [[ -n "$ICON_PATH" ]]; then
     ICON_FILE="$ICON_PATH" MOBILE_OUTPUT="$TMP_DIR/mobile-icons" php scripts/configurar-mobile.php
     cp -- "$TMP_DIR/mobile-icons/"*.png mobile-app/assets/images/
 fi
 cp -- "$TMP_DIR/branding.ts" mobile-app/constants/branding.ts
+cp -- "$TMP_DIR/mobile-app.json" mobile-app/app.json
 printf 'App móvil preparada en mobile-app con la URL indicada.\n'
 printf '\nZIP creado: %s\n' "$OUTPUT"
 printf 'El ZIP contiene credenciales: guárdalo en un lugar privado.\n'
