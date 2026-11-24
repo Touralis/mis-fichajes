@@ -1,0 +1,7 @@
+Principal oscuro
+#B8860B
+
+
+
+Acento claro
+#FFE066

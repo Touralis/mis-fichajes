@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.trademen.fichajes'
+    namespace 'com.mareleventos.fichajes'
     defaultConfig {
-        applicationId 'com.trademen.fichajes'
+        applicationId 'com.mareleventos.fichajes'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
