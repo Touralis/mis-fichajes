@@ -1,4 +1,4 @@
-package com.trademen.fichajes
+package com.mareleventos.fichajes
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

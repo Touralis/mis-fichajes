@@ -4,7 +4,7 @@ umask 077
 
 PROJECT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 cd "$PROJECT_DIR"
-for command in php npm tar zip; do
+for command in php npm node tar zip; do
     command -v "$command" >/dev/null 2>&1 || { printf 'Falta el comando requerido: %s\n' "$command" >&2; exit 1; }
 done
 for path in vendor/autoload.php node_modules/.bin/vite .env.example; do
@@ -26,8 +26,32 @@ printf '\n'
 [[ -n "$DEPLOY_DB_DATABASE" && -n "$DEPLOY_DB_USERNAME" ]] || { echo 'El nombre y el usuario de la base de datos son obligatorios.' >&2; exit 1; }
 export DEPLOY_URL DEPLOY_DB_HOST DEPLOY_DB_PORT DEPLOY_DB_DATABASE DEPLOY_DB_USERNAME DEPLOY_DB_PASSWORD
 
-printf 'Compilando los recursos de producción...\n'
-npm run build
+read -r -p '¿Añadir un icono personalizado? (s/N): ' CUSTOM_ICON
+ICON_PATH=''
+case "$CUSTOM_ICON" in
+    s|S|si|SI|sí|Sí|SÍ)
+        read -r -p 'Ruta del archivo PNG: ' ICON_PATH
+        [[ -f "$ICON_PATH" && -r "$ICON_PATH" ]] || { echo 'No se puede leer el archivo del icono.' >&2; exit 1; }
+        ICON_PATH=$(realpath -- "$ICON_PATH")
+        ICON_FILE="$ICON_PATH" php -r '$i = @getimagesize(getenv("ICON_FILE")); if (!$i || $i[2] !== IMAGETYPE_PNG) { fwrite(STDERR, "El icono debe ser un PNG válido.\n"); exit(1); }'
+        ;;
+    ''|n|N|no|NO) ;;
+    *) echo 'Respuesta no válida.' >&2; exit 1 ;;
+esac
+read -r -p '¿Personalizar la paleta de colores? (S/n): ' CUSTOM_PALETTE
+PRIMARY_COLOR='' ACCENT_COLOR=''
+case "$CUSTOM_PALETTE" in
+    ''|s|S|si|SI|sí|Sí|SÍ)
+        read -r -p 'Color principal oscuro (ej. #1e4037): ' PRIMARY_COLOR
+        read -r -p 'Color de acento claro (ej. #a8d563): ' ACCENT_COLOR
+        [[ "$PRIMARY_COLOR" =~ ^#[[:xdigit:]]{6}$ && "$ACCENT_COLOR" =~ ^#[[:xdigit:]]{6}$ ]] || { echo 'Introduce ambos colores en formato #RRGGBB.' >&2; exit 1; }
+        ;;
+    n|N|no|NO) ;;
+    *) echo 'Respuesta no válida.' >&2; exit 1 ;;
+esac
+if [[ -n "$ICON_PATH" ]]; then
+    php -r 'if (!extension_loaded("gd")) { fwrite(STDERR, "Para generar los iconos de la app móvil es necesaria la extensión GD de PHP.\n"); exit(1); }'
+fi
 TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/misfichajes-package.XXXXXXXX")
 trap 'rm -rf -- "$TMP_DIR"' EXIT
 STAGE="$TMP_DIR/proyecto"
@@ -41,6 +65,36 @@ tar -cf - \
     --exclude='./storage' --exclude='./database/*.sqlite' --exclude='./database/*.sqlite-*' \
     --exclude='./*.zip' --exclude='./.phpbrewrc' --exclude='./.idea' --exclude='./.vscode' \
     . | tar -xf - -C "$STAGE"
+if [[ -n "$ICON_PATH" ]]; then
+    ICON_FILE="$ICON_PATH" ICON_OUTPUT="$STAGE/public/icono-personalizado.png" php <<'PHPICON'
+<?php
+$path = getenv('ICON_FILE');
+[$width, $height] = getimagesize($path);
+if ($width === $height) {
+    if (!copy($path, getenv('ICON_OUTPUT'))) throw new RuntimeException('No se pudo copiar el icono.');
+} else {
+    if (!extension_loaded('gd')) throw new RuntimeException('Para adaptar un PNG rectangular es necesaria la extensión GD de PHP.');
+    $source = imagecreatefrompng($path);
+    $canvas = imagecreatetruecolor(512, 512);
+    imagealphablending($canvas, false);
+    imagesavealpha($canvas, true);
+    imagefill($canvas, 0, 0, imagecolorallocatealpha($canvas, 0, 0, 0, 127));
+    $scale = min(512 / $width, 512 / $height);
+    $newWidth = max(1, (int) round($width * $scale));
+    $newHeight = max(1, (int) round($height * $scale));
+    imagecopyresampled($canvas, $source, intdiv(512 - $newWidth, 2), intdiv(512 - $newHeight, 2), 0, 0, $newWidth, $newHeight, $width, $height);
+    if (!imagepng($canvas, getenv('ICON_OUTPUT'))) throw new RuntimeException('No se pudo guardar el icono.');
+    imagedestroy($source);
+    imagedestroy($canvas);
+    echo "Icono adaptado a un lienzo cuadrado transparente.\n";
+}
+PHPICON
+fi
+if [[ -n "$PRIMARY_COLOR" ]]; then
+    (cd "$STAGE" && node scripts/aplicar-paleta.mjs "$PRIMARY_COLOR" "$ACCENT_COLOR")
+fi
+printf 'Compilando los recursos de producción...\n'
+(cd "$STAGE" && npm run build)
 mkdir -p "$STAGE/storage/app/private" "$STAGE/storage/app/public" "$STAGE/storage/framework/cache/data" "$STAGE/storage/framework/sessions" "$STAGE/storage/framework/testing" "$STAGE/storage/framework/views" "$STAGE/storage/logs" "$STAGE/bootstrap/cache"
 
 STAGE_DIR="$STAGE" php <<'PHP'
@@ -76,6 +130,16 @@ chmod -R ug+rwX "$STAGE/storage" "$STAGE/bootstrap/cache"
 
 OUTPUT="$PROJECT_DIR/misfichajes-$(date +%Y%m%d-%H%M%S)-$$.zip"
 (cd "$STAGE" && zip -qry "$OUTPUT" .)
+# Preparar la app móvil por separado; no se incluye en el ZIP del servidor.
+mkdir -p "$TMP_DIR/mobile-icons"
+cp -- mobile-app/constants/branding.ts "$TMP_DIR/branding.ts"
+node scripts/configurar-mobile.mjs "$TMP_DIR/branding.ts" "$DEPLOY_URL" "$PRIMARY_COLOR" "$ACCENT_COLOR"
+if [[ -n "$ICON_PATH" ]]; then
+    ICON_FILE="$ICON_PATH" MOBILE_OUTPUT="$TMP_DIR/mobile-icons" php scripts/configurar-mobile.php
+    cp -- "$TMP_DIR/mobile-icons/"*.png mobile-app/assets/images/
+fi
+cp -- "$TMP_DIR/branding.ts" mobile-app/constants/branding.ts
+printf 'App móvil preparada en mobile-app con la URL indicada.\n'
 printf '\nZIP creado: %s\n' "$OUTPUT"
 printf 'El ZIP contiene credenciales: guárdalo en un lugar privado.\n'
 printf 'Importa misfichajes-base.sql por separado y configura la raíz web del subdominio en la carpeta public.\n'

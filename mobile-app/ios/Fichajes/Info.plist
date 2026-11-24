@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>Fichajes</string>
-          <string>com.trademen.fichajes</string>
+          <string>com.mareleventos.fichajes</string>
         </array>
       </dict>
     </array>

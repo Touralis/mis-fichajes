@@ -4,9 +4,10 @@
  */
 
 import { Platform } from 'react-native';
+import { branding } from './branding';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorLight = branding.primary;
+const tintColorDark = branding.accent;
 
 export const Colors = {
   light: {

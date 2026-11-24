@@ -1,7 +1,8 @@
 import { WebView } from 'react-native-webview';
+import { branding } from '@/constants/branding';
 
 export default function Home() {
     return (
-        <WebView source={{ uri: 'https://fichajes.trademen.es' }} />
+        <WebView source={{ uri: branding.url }} />
     );
 }
