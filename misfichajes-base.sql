@@ -151,6 +151,7 @@ CREATE TABLE `company_settings` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `allow_attendance_generation` tinyint(1) NOT NULL DEFAULT 0,
   `require_geolocation` tinyint(1) NOT NULL DEFAULT 0,
+  `allow_attendance_correction` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -167,5 +168,6 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_05_000000_add_a
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_06_000000_remove_generated_attendance_flag', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_07_000000_add_employee_phone', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_08_000000_add_attendance_geolocation', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_09_000000_add_attendance_correction_setting', 1);
 
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
