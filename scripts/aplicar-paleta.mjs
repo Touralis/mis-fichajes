@@ -71,8 +71,15 @@ const overrides = `\n/* Paleta personalizada: contraste independiente para super
 .accent,.brand-dot{color:${readableOnWhite(accent)}}
 .online,.login-copy em,.art-clock span{color:${accent}}
 .online{background:${accent}}
-.clock-button:not(.clock-out),.primary{background:${accent};color:${accentText}}
-.clock-button:not(.clock-out):hover{background:${accentHover};color:${accentText}}
+.primary{background:${accent};color:${accentText}}
+.hero-card .status{background:#ffffff;color:#263b30;border-color:#ffffff}
+.hero-card .status .online{background:#82958a}
+.hero-card .status:not(.status-off) .online{background:#339b53}
+.clock-button:not(.clock-out){background:#bce9b0;color:#1d4d2b}
+.clock-button:not(.clock-out):hover{background:#a7db99;color:#1d4d2b}
+.clock-button.clock-out{background:#e78179;color:#3e1c1b}
+.clock-button.clock-out:hover{background:#d96c64;color:#3e1c1b}
+img.brand-icon{background:#ffffff}
 .wide{background:${primary};color:${primaryText}}
 .login-aside .accent,.login-aside .brand-dot,.login-copy em,.art-clock span{color:${contrast(accent, primary) >= 4.5 ? accent : primaryText}}
 `;

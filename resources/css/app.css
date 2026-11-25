@@ -13,3 +13,5 @@ img.brand-icon{display:block;object-fit:contain;background:transparent;border-ra
 .clock-button:not(.clock-out){background:#bce9b0;color:#1d4d2b}
 
 .hero-card{background:#c6e9a2;color:#183625}.hero-card h2,.hero-time strong{color:#183625}.hero-card p,.hero-card .eyebrow,.hero-time small{color:#345b42}.hero-time{border-color:#729879}.status-off{background:#fff;color:#263b30;border-color:#fff}.status-off .online{background:#82958a}
+
+img.brand-icon{background:#fff;border-radius:8px;padding:3px}.hero-card .status{background:#fff;color:#263b30;border-color:#fff}.hero-card .status .online{background:#82958a}.hero-card .status:not(.status-off) .online{background:#339b53}.clock-button:not(.clock-out){background:#bce9b0;color:#1d4d2b}.clock-button:not(.clock-out):hover{background:#a7db99}.clock-button.clock-out{background:#e78179;color:#3e1c1b}.clock-button.clock-out:hover{background:#d96c64}

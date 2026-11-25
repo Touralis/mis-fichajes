@@ -70,18 +70,11 @@ class AttendanceTest extends TestCase {
   $this->actingAs($ana)->getJson('/api/records?from=2026-10-01&to=2026-10-31&employee_id='.$luis->id)->assertOk()->assertJsonCount(1,'data')->assertJsonPath('data.0.user.name','Ana');
   $this->get('/api/records/pdf?from=2026-10-01&to=2026-10-31&employee_id='.$luis->id)->assertOk()->assertHeader('content-type','application/pdf')->assertSee('%PDF',false);
  }
- public function test_admin_correction_is_audited_and_overlap_is_rejected(): void {
-  $admin=User::factory()->create(); $admin->forceFill(['role'=>'admin'])->save(); $employee=User::factory()->create();
-  $record=AttendanceRecord::create(['user_id'=>$employee->id,'started_at'=>'2026-10-05 09:00:00','ended_at'=>'2026-10-05 12:00:00']);
-  AttendanceRecord::create(['user_id'=>$employee->id,'started_at'=>'2026-10-05 14:00:00','ended_at'=>'2026-10-05 17:00:00']);
-  $payload=['started_at'=>'2026-10-05T09:30','ended_at'=>'2026-10-05T12:00','reason'=>'Ajuste solicitado'];
-  $this->actingAs($employee)->putJson('/api/records/'.$record->id,$payload)->assertForbidden();
-  $this->actingAs($admin)->putJson('/api/records/'.$record->id,$payload)->assertOk();
-  $this->assertDatabaseHas('attendance_corrections',['attendance_record_id'=>$record->id,'actor_id'=>$admin->id,'reason'=>'Ajuste solicitado']);
-  $this->getJson('/api/records/'.$record->id.'/history')->assertOk()->assertJsonCount(1);
-  $payload['ended_at']='2026-10-05T15:00';
-  $this->putJson('/api/records/'.$record->id,$payload)->assertUnprocessable();
-  $this->assertDatabaseCount('attendance_corrections',1);
+ public function test_existing_records_cannot_be_modified_through_api(): void {
+  $admin=User::factory()->create(); $admin->forceFill(['role'=>'admin'])->save();
+  $record=AttendanceRecord::create(['user_id'=>$admin->id,'started_at'=>'2026-10-05 09:00:00','ended_at'=>'2026-10-05 12:00:00']);
+  $this->actingAs($admin)->putJson('/api/records/'.$record->id,['started_at'=>'2026-10-05T10:00','ended_at'=>'2026-10-05T12:00','reason'=>'Cambio'])->assertNotFound();
+  $this->assertEquals('09:00',$record->fresh()->started_at->format('H:i'));
  }
  public function test_company_settings_signature_and_pdf_are_protected_and_persisted(): void {
   \Illuminate\Support\Facades\Storage::fake('local');

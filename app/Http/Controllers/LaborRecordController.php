@@ -20,25 +20,6 @@ class LaborRecordController extends Controller {
  public function index(Request $request) {
   return $this->query($request,$this->filters($request))->orderByDesc('started_at')->orderByDesc('id')->paginate(25);
  }
- public function update(Request $request, AttendanceRecord $record) {
-  abort_unless($request->user()->role === 'admin',403);
-  $data=$request->validate(['started_at'=>'required|date_format:Y-m-d\TH:i','ended_at'=>'nullable|date_format:Y-m-d\TH:i|after:started_at','reason'=>'required|string|min:5|max:1000']);
-  DB::transaction(function () use ($request,$record,$data) {
-   User::whereKey($record->user_id)->lockForUpdate()->firstOrFail();
-   $record=AttendanceRecord::whereKey($record->id)->lockForUpdate()->firstOrFail();
-   $start=Carbon::createFromFormat('Y-m-d\TH:i',$data['started_at'])->seconds(0);
-   $end=empty($data['ended_at']) ? null : Carbon::createFromFormat('Y-m-d\TH:i',$data['ended_at'])->seconds(0);
-   $overlap=AttendanceRecord::where('user_id',$record->user_id)->whereKeyNot($record->id)->where(function($q) use ($end) { if ($end) $q->where('started_at','<',$end); })->where(fn($q)=>$q->whereNull('ended_at')->orWhere('ended_at','>',$start))->exists();
-   if ($overlap) throw ValidationException::withMessages(['started_at'=>'El intervalo se solapa con otro fichaje de esta persona.']);
-   DB::table('attendance_corrections')->insert(['attendance_record_id'=>$record->id,'actor_id'=>$request->user()->id,'previous_started_at'=>$record->started_at,'previous_ended_at'=>$record->ended_at,'new_started_at'=>$start,'new_ended_at'=>$end,'reason'=>$data['reason'],'created_at'=>now(),'updated_at'=>now()]);
-   $record->update(['started_at'=>$start,'ended_at'=>$end]);
-  });
-  return response()->json(['ok'=>true]);
- }
- public function history(Request $request, AttendanceRecord $record) {
-  abort_unless($request->user()->role === 'admin',403);
-  return DB::table('attendance_corrections')->join('users','users.id','=','attendance_corrections.actor_id')->where('attendance_record_id',$record->id)->orderByDesc('attendance_corrections.id')->get(['attendance_corrections.*','users.name as actor_name']);
- }
  public function pdf(Request $request) {
   $filters=$request->validate(['from'=>'required|date_format:Y-m-d','to'=>'required|date_format:Y-m-d|after_or_equal:from','employee_id'=>'nullable|integer|exists:users,id']);
   if ($request->user()->role === 'admin' && empty($filters['employee_id'])) throw ValidationException::withMessages(['employee_id'=>'Selecciona una persona para generar el informe.']);

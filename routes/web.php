@@ -18,7 +18,5 @@ Route::middleware('auth')->group(function () {
  Route::post('/api/records/generate', [\App\Http\Controllers\AttendanceGenerationController::class, 'store']);
  Route::get('/api/records', [LaborRecordController::class, 'index']);
  Route::get('/api/records/pdf', [LaborRecordController::class, 'pdf']);
- Route::put('/api/records/{record}', [LaborRecordController::class, 'update']);
- Route::get('/api/records/{record}/history', [LaborRecordController::class, 'history']);
  Route::get('/api/export', [AttendanceController::class, 'export']);
 });
