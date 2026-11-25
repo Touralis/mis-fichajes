@@ -6,6 +6,31 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 class AttendanceTest extends TestCase {
  use RefreshDatabase;
+ public function test_login_accepts_email_phone_and_identity_with_the_same_password(): void {
+  $user=User::factory()->create(['email'=>'ana@example.com','password'=>bcrypt('password123')]);
+  $user->forceFill(['phone'=>'612345678','identity_number'=>'12345678A','active'=>false])->save();
+  foreach (['ana@example.com','612345678','12345678A'] as $identifier) {
+   $this->postJson('/login',['email'=>$identifier,'password'=>'password123'])->assertOk();
+   $this->assertAuthenticatedAs($user);
+   $this->postJson('/logout')->assertOk();
+  }
+  $this->postJson('/login',['email'=>'612345678','password'=>'incorrecta'])->assertStatus(422);
+  $this->assertGuest();
+ }
+ public function test_geolocation_is_required_and_saved_for_each_clock_action_when_enabled(): void {
+  $user=User::factory()->create();
+  \Illuminate\Support\Facades\DB::table('company_settings')->updateOrInsert(['id'=>1],['require_geolocation'=>true]);
+  $this->actingAs($user)->postJson('/api/clock')->assertUnprocessable();
+  $this->assertDatabaseCount('attendance_records',0);
+  $this->postJson('/api/clock',['latitude'=>91,'longitude'=>-3,'accuracy'=>10])->assertUnprocessable();
+  $this->postJson('/api/clock',['latitude'=>40.4168,'longitude'=>-3.7038,'accuracy'=>10])->assertOk();
+  $this->postJson('/api/clock')->assertUnprocessable();
+  $this->postJson('/api/clock',['latitude'=>40.42,'longitude'=>-3.7,'accuracy'=>20])->assertOk();
+  $record=AttendanceRecord::firstOrFail();
+  $this->assertEquals(40.4168,$record->start_latitude);
+  $this->assertEquals(-3.7,$record->end_longitude);
+  $this->assertNotNull($record->ended_at);
+ }
  public function test_employee_can_start_and_finish_a_shift(): void {
   $user=User::factory()->create();
   $this->actingAs($user)->postJson('/api/clock')->assertOk();
@@ -20,7 +45,7 @@ class AttendanceTest extends TestCase {
  }
  public function test_admin_can_create_employee_with_hashed_password(): void {
   $admin=User::factory()->create(); $admin->forceFill(['role'=>'admin'])->save();
-  $this->actingAs($admin)->postJson('/api/employees',['name'=>'Ana','email'=>'ana@example.com','password'=>'password123','position'=>'Recepción','daily_hours'=>8,'role'=>'employee','active'=>true])->assertOk();
+  $this->actingAs($admin)->postJson('/api/employees',['name'=>'Ana','email'=>'ana@example.com','password'=>'password123','position'=>'Recepción','daily_hours'=>8,'role'=>'employee'])->assertOk();
   $employee=User::where('email','ana@example.com')->firstOrFail();
   $this->assertTrue(\Illuminate\Support\Facades\Hash::check('password123',$employee->password));
  }

@@ -24,6 +24,7 @@ CREATE TABLE `users` (
   `daily_hours` decimal(4,2) NOT NULL DEFAULT 8.00,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `identity_number` varchar(50) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
   `social_security_number` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`)
@@ -107,6 +108,12 @@ CREATE TABLE `attendance_records` (
   `user_id` bigint(20) unsigned NOT NULL,
   `started_at` timestamp NOT NULL,
   `ended_at` timestamp NULL DEFAULT NULL,
+  `start_latitude` decimal(10,7) DEFAULT NULL,
+  `start_longitude` decimal(10,7) DEFAULT NULL,
+  `start_accuracy` decimal(10,2) DEFAULT NULL,
+  `end_latitude` decimal(10,7) DEFAULT NULL,
+  `end_longitude` decimal(10,7) DEFAULT NULL,
+  `end_accuracy` decimal(10,2) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -143,6 +150,7 @@ CREATE TABLE `company_settings` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `allow_attendance_generation` tinyint(1) NOT NULL DEFAULT 0,
+  `require_geolocation` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -157,5 +165,7 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_03_000000_creat
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_04_000000_add_employee_identification', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_05_000000_add_attendance_generation_settings', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_06_000000_remove_generated_attendance_flag', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_07_000000_add_employee_phone', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_08_000000_add_attendance_geolocation', 1);
 
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

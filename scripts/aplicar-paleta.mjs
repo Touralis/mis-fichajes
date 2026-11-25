@@ -52,14 +52,22 @@ const themed = css.replace(/([\w-]+)\s*:\s*([^;{}]+)/g, (declaration, property, 
 const primaryText = foreground(primary), accentText = foreground(accent);
 const primaryMuted = mix(primaryText, primary, 0.18);
 const primaryBorder = mix(primaryText, primary, 0.45);
+const accentMuted = mix(accentText, accent, 0.25);
+const accentBorder = mix(accentText, accent, 0.5);
 const accentHover = mix(accent, accentText, 0.1);
 // Los componentes de marca tienen su propio contexto de contraste.
 const overrides = `\n/* Paleta personalizada: contraste independiente para superficies de marca. */
-.hero-card,.login-aside{background:${primary};color:${primaryText}}
-.hero-card h2,.hero-time strong,.login-aside .brand,.login-copy h1,.art-clock{color:${primaryText}}
-.hero-card p,.hero-time small,.hero-card .eyebrow,.login-aside .eyebrow,.login-copy p,.aside-footer,.art-clock small,.art-label{color:${primaryMuted}}
-.hero-time,.aside-art{border-color:${primaryBorder}}
-.status{color:${primaryText};background:${primary};border-color:${primaryBorder}}
+.login-aside{background:${primary};color:${primaryText}}
+.hero-card{background:${accent};color:${accentText}}
+.hero-card h2,.hero-time strong{color:${accentText}}
+.login-aside .brand,.login-copy h1,.art-clock{color:${primaryText}}
+.hero-card p,.hero-time small,.hero-card .eyebrow{color:${accentMuted}}
+.login-aside .eyebrow,.login-copy p,.aside-footer,.art-clock small,.art-label{color:${primaryMuted}}
+.hero-time{border-color:${accentBorder}}
+.aside-art{border-color:${primaryBorder}}
+.status{color:${accentText};background:${accent};border-color:${accentBorder}}
+.status-off{background:#ffffff;color:#263b30;border-color:#ffffff}
+.status-off .online{background:#82958a}
 .accent,.brand-dot{color:${readableOnWhite(accent)}}
 .online,.login-copy em,.art-clock span{color:${accent}}
 .online{background:${accent}}
