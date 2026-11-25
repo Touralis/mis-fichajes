@@ -65,7 +65,7 @@ tar -cf - \
     --exclude='./.env' --exclude='./.env.*' --exclude='./auth.json' --exclude='./.phpunit.result.cache' \
     --exclude='./public/hot' --exclude='./public/storage' --exclude='./bootstrap/cache/*.php' \
     --exclude='./storage' --exclude='./database/*.sqlite' --exclude='./database/*.sqlite-*' \
-    --exclude='./*.zip' --exclude='./.phpbrewrc' --exclude='./.idea' --exclude='./.vscode' \
+    --exclude='./*.zip' --exclude='./*.sql' --exclude='./.phpbrewrc' --exclude='./.idea' --exclude='./.vscode' \
     . | tar -xf - -C "$STAGE"
 if [[ -n "$ICON_PATH" ]]; then
     ICON_FILE="$ICON_PATH" ICON_OUTPUT="$STAGE/public/icono-personalizado.png" php <<'PHPICON'
