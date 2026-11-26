@@ -7,14 +7,14 @@ table { width: 100%; border-collapse: collapse; }
 .identification { margin-top: 6px; }
 .identification td { border: 1px solid #000; width: 50%; height: 42px; padding: 4px; vertical-align: middle; font-size: 10pt; }
 .identification strong { font-size: 11pt; }
-h2 { text-align: center; font-size: 14pt; margin: 6px 0 6px; }
+h2 { text-align: center; font-size: 14pt; margin: 18px 0 10px; }
 .entries th, .entries td { border: 1px solid #000; text-align: center; padding: 1px 2px; font-size: 8.5pt; }
 .entries th { background: #ddd; font-weight: bold; }
 .total { text-align: center; font-weight: bold; margin-top: 16px; font-size: 11pt; }
-.summary { margin-top: 5px; border: 1px solid #ccc; }
+.summary { margin-top: 19px; border: 1px solid #ccc; }
 .summary td { width: 50%; padding: 2px 10px; font-size: 9pt; }
 .summary strong { font-size: 11pt; }
-.signatures { margin-top: 5px; }
+.signatures { margin-top: 23px; }
 .signatures td { width: 50%; vertical-align: top; font-size: 10pt; }
 .signatures .right { text-align: right; }
 </style></head><body>
