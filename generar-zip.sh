@@ -26,7 +26,7 @@ fi
 if [[ -z "$CONFIG_PATH" ]]; then
     read -r -p 'Archivo de configuración (Enter para introducir los datos manualmente): ' CONFIG_PATH
 fi
-ICON_PATH='' PRIMARY_COLOR='' ACCENT_COLOR='' CONFIG_EXCLUDE=''
+ICON_PATH='' PRIMARY_COLOR='' ACCENT_COLOR='' CONFIG_EXCLUDE='' APP_KEY=''
 if [[ -n "$CONFIG_PATH" ]]; then
     [[ -f "$CONFIG_PATH" && -r "$CONFIG_PATH" ]] || {
         echo 'No se puede leer el archivo de configuración.' >&2
@@ -46,7 +46,7 @@ if [[ -n "$CONFIG_PATH" ]]; then
         key=${line%%=*}
         value=${line#*=}
         case "$key" in
-        DEPLOY_URL | MOBILE_APP_ID | DEPLOY_DB_HOST | DEPLOY_DB_PORT | DEPLOY_DB_DATABASE | DEPLOY_DB_USERNAME | DEPLOY_DB_PASSWORD | ICON_PATH | PRIMARY_COLOR | ACCENT_COLOR) ;;
+        DEPLOY_URL | MOBILE_APP_ID | DEPLOY_DB_HOST | DEPLOY_DB_PORT | DEPLOY_DB_DATABASE | DEPLOY_DB_USERNAME | DEPLOY_DB_PASSWORD | APP_KEY | ICON_PATH | PRIMARY_COLOR | ACCENT_COLOR) ;;
         *)
             printf 'Clave de configuración desconocida: %s\n' "$key" >&2
             exit 1
@@ -127,7 +127,10 @@ if [[ -n "$ICON_PATH" ]]; then
     ICON_PATH=$(realpath -- "$ICON_PATH")
     ICON_FILE="$ICON_PATH" php -r '$i = @getimagesize(getenv("ICON_FILE")); if (!$i || $i[2] !== IMAGETYPE_PNG) { fwrite(STDERR, "El icono debe ser un PNG válido.\n"); exit(1); }'
 fi
-export DEPLOY_URL DEPLOY_DB_HOST DEPLOY_DB_PORT DEPLOY_DB_DATABASE DEPLOY_DB_USERNAME DEPLOY_DB_PASSWORD
+if [[ -n "$APP_KEY" ]]; then
+    APP_KEY_CHECK="$APP_KEY" php -r '$key = getenv("APP_KEY_CHECK"); if (!str_starts_with($key, "base64:") || strlen((string) base64_decode(substr($key, 7), true)) !== 32) { fwrite(STDERR, "APP_KEY debe ser una clave Laravel base64 de 32 bytes válida.\n"); exit(1); }'
+fi
+export APP_KEY DEPLOY_URL DEPLOY_DB_HOST DEPLOY_DB_PORT DEPLOY_DB_DATABASE DEPLOY_DB_USERNAME DEPLOY_DB_PASSWORD
 if [[ -n "$ICON_PATH" ]]; then
     php -r 'if (!extension_loaded("gd")) { fwrite(STDERR, "Para generar los iconos de la app móvil es necesaria la extensión GD de PHP.\n"); exit(1); }'
 fi
@@ -186,7 +189,7 @@ function quoteEnv(string $value): string {
 }
 $values = [
     'APP_ENV' => 'production', 'APP_DEBUG' => 'false',
-    'APP_KEY' => 'base64:'.base64_encode(random_bytes(32)), 'APP_URL' => getenv('DEPLOY_URL'),
+    'APP_KEY' => getenv('APP_KEY') ?: 'base64:'.base64_encode(random_bytes(32)), 'APP_URL' => getenv('DEPLOY_URL'),
     'LOG_LEVEL' => 'warning', 'DB_CONNECTION' => 'mysql',
     'DB_HOST' => getenv('DEPLOY_DB_HOST'), 'DB_PORT' => getenv('DEPLOY_DB_PORT'),
     'DB_DATABASE' => getenv('DEPLOY_DB_DATABASE'), 'DB_USERNAME' => getenv('DEPLOY_DB_USERNAME'),
@@ -200,7 +203,7 @@ foreach ($values as $key => $value) {
 }
 if (file_put_contents($stage.'/.env', $env) === false) throw new RuntimeException('No se pudo crear el archivo .env.');
 PHP
-unset DEPLOY_DB_PASSWORD
+unset DEPLOY_DB_PASSWORD APP_KEY
 
 # Apache debe poder atravesar los directorios y leer los archivos públicos.
 # La clave y las credenciales permanecen accesibles solo para el propietario.
