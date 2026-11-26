@@ -23,6 +23,15 @@ class AttendanceGenerationTest extends TestCase {
   $this->postJson('/api/records/generate',['token'=>$token])->assertUnprocessable();
   $this->assertDatabaseCount('attendance_records',1);
  }
+ public function test_admin_generates_for_selected_employee_and_today_is_allowed(): void {
+  $this->travelTo(\Carbon\Carbon::parse('2026-11-26 19:00:00'));
+  $admin=User::factory()->create()->fresh(); $admin->forceFill(['role'=>'admin'])->save(); $employee=User::factory()->create()->fresh();
+  $input=['employee_id'=>$employee->id,'from'=>'2026-11-26','to'=>'2026-11-26','start'=>'09:00','end'=>'18:00','weekends'=>false,'variation'=>false];
+  $response=$this->actingAs($admin)->postJson('/api/records/generate/preview',$input)->assertOk();
+  $this->postJson('/api/records/generate',['token'=>$response->json('token')])->assertOk();
+  $this->assertDatabaseHas('attendance_records',['user_id'=>$employee->id,'origin'=>'generated','generated_by'=>$admin->id,'started_at'=>'2026-11-26 09:00:00']);
+  $input['end']='20:00'; $this->postJson('/api/records/generate/preview',$input)->assertUnprocessable()->assertJsonValidationErrors('end');
+ }
  public function test_conflicts_and_disabled_setting_are_rechecked_on_confirmation(): void {
   $this->travelTo(now()->setDate(2026,11,23)->setTime(20,0));
   $employee=User::factory()->create()->fresh(); DB::table('company_settings')->insert(['id'=>1,'allow_attendance_generation'=>true]);

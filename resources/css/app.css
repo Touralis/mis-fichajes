@@ -19,3 +19,5 @@ img.brand-icon{background:#fff;border-radius:8px;padding:3px}.hero-card .status{
 .aside-art{background:#fff;color:#263b30;border-color:#fff}.aside-art .art-clock,.aside-art .art-label{color:#263b30}.aside-art .art-line{background:#dce6df}.aside-art .online{background:#55a56b}.password-field{position:relative;display:block}.password-field input{padding-right:48px}.password-toggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:grid;place-items:center;border:0;background:transparent;color:#52675b;border-radius:6px}.password-toggle:focus-visible{outline:2px solid #315d42;outline-offset:-2px}
 
 .signature-pad{margin:14px 0}.signature-pad canvas{display:block;width:100%;max-width:600px;height:180px;background:#fff;border:1px solid #cbdad0;border-radius:8px;touch-action:none;cursor:crosshair}.signature-pad button{margin-top:10px}
+
+.observation-description{margin-top:18px}.observation-list{margin-top:20px}.observation-text{white-space:normal;min-width:200px;overflow-wrap:anywhere}

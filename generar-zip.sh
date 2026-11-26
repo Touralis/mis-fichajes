@@ -12,45 +12,75 @@ for path in vendor/autoload.php node_modules/.bin/vite .env.example; do
 done
 
 printf 'Datos de la instalación de Mis Fichajes\n'
-read -r -p 'URL completa del subdominio (ej. https://fichajes.ejemplo.com): ' DEPLOY_URL
-read -r -p 'Identificador de la app móvil (ej. com.empresa.fichajes): ' MOBILE_APP_ID
-read -r -p 'Host de la base de datos [127.0.0.1]: ' DEPLOY_DB_HOST
-DEPLOY_DB_HOST=${DEPLOY_DB_HOST:-127.0.0.1}
-read -r -p 'Puerto de la base de datos [3306]: ' DEPLOY_DB_PORT
-DEPLOY_DB_PORT=${DEPLOY_DB_PORT:-3306}
-read -r -p 'Nombre de la base de datos: ' DEPLOY_DB_DATABASE
-read -r -p 'Usuario de la base de datos: ' DEPLOY_DB_USERNAME
-read -r -s -p 'Contraseña de la base de datos (puede estar vacía): ' DEPLOY_DB_PASSWORD
-printf '\n'
+CONFIG_PATH=${1:-}
+if [[ $# -gt 1 ]]; then echo 'Uso: ./generar-zip.sh [archivo.conf]' >&2; exit 1; fi
+if [[ -z "$CONFIG_PATH" ]]; then
+    read -r -p 'Archivo de configuración (Enter para introducir los datos manualmente): ' CONFIG_PATH
+fi
+ICON_PATH='' PRIMARY_COLOR='' ACCENT_COLOR='' CONFIG_EXCLUDE=''
+if [[ -n "$CONFIG_PATH" ]]; then
+    [[ -f "$CONFIG_PATH" && -r "$CONFIG_PATH" ]] || { echo 'No se puede leer el archivo de configuración.' >&2; exit 1; }
+    CONFIG_PATH=$(realpath -- "$CONFIG_PATH")
+    case "$CONFIG_PATH" in "$PROJECT_DIR"/*) CONFIG_EXCLUDE="./${CONFIG_PATH#"$PROJECT_DIR"/}" ;; esac
+    DEPLOY_URL='' MOBILE_APP_ID='' DEPLOY_DB_HOST='127.0.0.1' DEPLOY_DB_PORT='3306' DEPLOY_DB_DATABASE='' DEPLOY_DB_USERNAME='' DEPLOY_DB_PASSWORD=''
+    declare -A CONFIG_SEEN=()
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        line=${line%$'\r'}
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ "$line" == *=* ]] || { echo 'Línea no válida en la configuración: se esperaba CLAVE=valor.' >&2; exit 1; }
+        key=${line%%=*}; value=${line#*=}
+        case "$key" in
+            DEPLOY_URL|MOBILE_APP_ID|DEPLOY_DB_HOST|DEPLOY_DB_PORT|DEPLOY_DB_DATABASE|DEPLOY_DB_USERNAME|DEPLOY_DB_PASSWORD|ICON_PATH|PRIMARY_COLOR|ACCENT_COLOR) ;;
+            *) printf 'Clave de configuración desconocida: %s\n' "$key" >&2; exit 1 ;;
+        esac
+        [[ ! -v CONFIG_SEEN[$key] ]] || { printf 'Clave repetida en la configuración: %s\n' "$key" >&2; exit 1; }
+        CONFIG_SEEN[$key]=1
+        printf -v "$key" '%s' "$value"
+    done < "$CONFIG_PATH"
+    if [[ ! -v CONFIG_SEEN[DEPLOY_DB_PASSWORD] ]]; then
+        read -r -s -p 'Contraseña de la base de datos (puede estar vacía): ' DEPLOY_DB_PASSWORD
+        printf '\n'
+    fi
+    if [[ -n "$ICON_PATH" && "$ICON_PATH" != /* ]]; then ICON_PATH="$(dirname -- "$CONFIG_PATH")/$ICON_PATH"; fi
+else
+    read -r -p 'URL completa del subdominio (ej. https://fichajes.ejemplo.com): ' DEPLOY_URL
+    read -r -p 'Identificador de la app móvil (ej. com.empresa.fichajes): ' MOBILE_APP_ID
+    read -r -p 'Host de la base de datos [127.0.0.1]: ' DEPLOY_DB_HOST
+    DEPLOY_DB_HOST=${DEPLOY_DB_HOST:-127.0.0.1}
+    read -r -p 'Puerto de la base de datos [3306]: ' DEPLOY_DB_PORT
+    DEPLOY_DB_PORT=${DEPLOY_DB_PORT:-3306}
+    read -r -p 'Nombre de la base de datos: ' DEPLOY_DB_DATABASE
+    read -r -p 'Usuario de la base de datos: ' DEPLOY_DB_USERNAME
+    read -r -s -p 'Contraseña de la base de datos (puede estar vacía): ' DEPLOY_DB_PASSWORD
+    printf '\n'
+    read -r -p '¿Añadir un icono personalizado? (s/N): ' CUSTOM_ICON
+    case "$CUSTOM_ICON" in
+        s|S|si|SI|sí|Sí|SÍ) read -r -p 'Ruta del archivo PNG: ' ICON_PATH ;;
+        ''|n|N|no|NO) ;;
+        *) echo 'Respuesta no válida.' >&2; exit 1 ;;
+    esac
+    read -r -p '¿Personalizar la paleta de colores? (S/n): ' CUSTOM_PALETTE
+    case "$CUSTOM_PALETTE" in
+        ''|s|S|si|SI|sí|Sí|SÍ)
+            read -r -p 'Color principal oscuro (ej. #1e4037): ' PRIMARY_COLOR
+            read -r -p 'Color de acento claro (ej. #a8d563): ' ACCENT_COLOR ;;
+        n|N|no|NO) ;;
+        *) echo 'Respuesta no válida.' >&2; exit 1 ;;
+    esac
+fi
 [[ "$DEPLOY_URL" =~ ^https?://[^[:space:]/]+(/[^[:space:]]*)?$ ]] || { echo 'La URL debe empezar por http:// o https://.' >&2; exit 1; }
 [[ "$MOBILE_APP_ID" =~ ^[A-Za-z][A-Za-z0-9]*(\.[A-Za-z][A-Za-z0-9]*)+$ ]] || { echo 'Identificador de app inválido. Usa al menos dos partes separadas por puntos, por ejemplo com.empresa.fichajes; cada parte debe empezar por una letra y contener solo letras o números.' >&2; exit 1; }
 [[ "$DEPLOY_DB_PORT" =~ ^[0-9]+$ ]] && (( DEPLOY_DB_PORT >= 1 && DEPLOY_DB_PORT <= 65535 )) || { echo 'Puerto inválido.' >&2; exit 1; }
-[[ -n "$DEPLOY_DB_DATABASE" && -n "$DEPLOY_DB_USERNAME" ]] || { echo 'El nombre y el usuario de la base de datos son obligatorios.' >&2; exit 1; }
+[[ -n "$DEPLOY_DB_DATABASE" && -n "$DEPLOY_DB_USERNAME" && -n "$DEPLOY_DB_HOST" ]] || { echo 'El host, el nombre y el usuario de la base de datos son obligatorios.' >&2; exit 1; }
+if [[ -n "$PRIMARY_COLOR" || -n "$ACCENT_COLOR" ]]; then
+    [[ "$PRIMARY_COLOR" =~ ^#[[:xdigit:]]{6}$ && "$ACCENT_COLOR" =~ ^#[[:xdigit:]]{6}$ ]] || { echo 'Introduce ambos colores en formato #RRGGBB.' >&2; exit 1; }
+fi
+if [[ -n "$ICON_PATH" ]]; then
+    [[ -f "$ICON_PATH" && -r "$ICON_PATH" ]] || { echo 'No se puede leer el archivo del icono.' >&2; exit 1; }
+    ICON_PATH=$(realpath -- "$ICON_PATH")
+    ICON_FILE="$ICON_PATH" php -r '$i = @getimagesize(getenv("ICON_FILE")); if (!$i || $i[2] !== IMAGETYPE_PNG) { fwrite(STDERR, "El icono debe ser un PNG válido.\n"); exit(1); }'
+fi
 export DEPLOY_URL DEPLOY_DB_HOST DEPLOY_DB_PORT DEPLOY_DB_DATABASE DEPLOY_DB_USERNAME DEPLOY_DB_PASSWORD
-
-read -r -p '¿Añadir un icono personalizado? (s/N): ' CUSTOM_ICON
-ICON_PATH=''
-case "$CUSTOM_ICON" in
-    s|S|si|SI|sí|Sí|SÍ)
-        read -r -p 'Ruta del archivo PNG: ' ICON_PATH
-        [[ -f "$ICON_PATH" && -r "$ICON_PATH" ]] || { echo 'No se puede leer el archivo del icono.' >&2; exit 1; }
-        ICON_PATH=$(realpath -- "$ICON_PATH")
-        ICON_FILE="$ICON_PATH" php -r '$i = @getimagesize(getenv("ICON_FILE")); if (!$i || $i[2] !== IMAGETYPE_PNG) { fwrite(STDERR, "El icono debe ser un PNG válido.\n"); exit(1); }'
-        ;;
-    ''|n|N|no|NO) ;;
-    *) echo 'Respuesta no válida.' >&2; exit 1 ;;
-esac
-read -r -p '¿Personalizar la paleta de colores? (S/n): ' CUSTOM_PALETTE
-PRIMARY_COLOR='' ACCENT_COLOR=''
-case "$CUSTOM_PALETTE" in
-    ''|s|S|si|SI|sí|Sí|SÍ)
-        read -r -p 'Color principal oscuro (ej. #1e4037): ' PRIMARY_COLOR
-        read -r -p 'Color de acento claro (ej. #a8d563): ' ACCENT_COLOR
-        [[ "$PRIMARY_COLOR" =~ ^#[[:xdigit:]]{6}$ && "$ACCENT_COLOR" =~ ^#[[:xdigit:]]{6}$ ]] || { echo 'Introduce ambos colores en formato #RRGGBB.' >&2; exit 1; }
-        ;;
-    n|N|no|NO) ;;
-    *) echo 'Respuesta no válida.' >&2; exit 1 ;;
-esac
 if [[ -n "$ICON_PATH" ]]; then
     php -r 'if (!extension_loaded("gd")) { fwrite(STDERR, "Para generar los iconos de la app móvil es necesaria la extensión GD de PHP.\n"); exit(1); }'
 fi
@@ -62,7 +92,7 @@ mkdir -p "$STAGE"
 tar -cf - \
     --exclude='./.git' --exclude='./.agents' --exclude='./.codex' --exclude='./.aws' \
     --exclude='./mobile-app' --exclude='./stubs' --exclude='./src' --exclude='./generar-zip.sh' --exclude='./generar_zip.sh' --exclude='./install.txt' --exclude='./misfichajes-base.sql' --exclude='./admin-*.sql' \
-    --exclude='./.env' --exclude='./.env.*' --exclude='./auth.json' --exclude='./.phpunit.result.cache' \
+    --exclude='./*.conf' --exclude="${CONFIG_EXCLUDE:-./.no-config-to-exclude}" --exclude='./.env' --exclude='./.env.*' --exclude='./auth.json' --exclude='./.phpunit.result.cache' \
     --exclude='./public/hot' --exclude='./public/storage' --exclude='./bootstrap/cache/*.php' \
     --exclude='./storage' --exclude='./database/*.sqlite' --exclude='./database/*.sqlite-*' \
     --exclude='./*.zip' --exclude='./*.sql' --exclude='./.phpbrewrc' --exclude='./.idea' --exclude='./.vscode' \

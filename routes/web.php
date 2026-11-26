@@ -4,7 +4,7 @@ use App\Http\Controllers\LaborRecordController;
 use App\Http\Controllers\CompanySettingsController;
 use Illuminate\Support\Facades\Route;
 Route::view('/', 'app');
-Route::view('/{section}', 'app')->whereIn('section', ['historial', 'registro-laboral', 'equipo', 'ajustes', 'perfil']);
+Route::view('/{section}', 'app')->whereIn('section', ['historial', 'registro-laboral', 'equipo', 'ajustes', 'perfil', 'observaciones']);
 Route::post('/login', [AttendanceController::class, 'login'])->middleware('throttle:10,1');
 Route::middleware('auth')->group(function () {
  Route::post('/logout', [AttendanceController::class, 'logout']);
@@ -14,6 +14,9 @@ Route::middleware('auth')->group(function () {
  Route::get('/api/profile/signature', [\App\Http\Controllers\UserSignatureController::class, 'show']);
  Route::post('/api/profile/signature', [\App\Http\Controllers\UserSignatureController::class, 'save']);
  Route::delete('/api/profile/signature', [\App\Http\Controllers\UserSignatureController::class, 'destroy']);
+ Route::get('/api/observations', [\App\Http\Controllers\DayObservationController::class, 'index']);
+ Route::post('/api/observations', [\App\Http\Controllers\DayObservationController::class, 'store']);
+ Route::delete('/api/observations/{id}', [\App\Http\Controllers\DayObservationController::class, 'destroy']);
  Route::get('/api/state', [AttendanceController::class, 'state']);
  Route::post('/api/clock', [AttendanceController::class, 'clock']);
  Route::post('/api/employees', [AttendanceController::class, 'saveEmployee']);

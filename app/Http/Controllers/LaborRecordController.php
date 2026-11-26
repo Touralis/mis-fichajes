@@ -60,6 +60,7 @@ class LaborRecordController extends Controller
         $employee = $request->user()->role === 'admin' ? User::findOrFail($filters['employee_id']) : $request->user();
         $filters['employee_id'] = $employee->id;
         $records = $this->query($request, $filters)->orderBy('started_at')->orderBy('id')->get();
+        $observations = DB::table('day_observations')->whereBetween('date', [$filters['from'], $filters['to']])->where(fn($q) => $q->whereNull('user_id')->orWhere('user_id', $employee->id))->orderBy('id')->get()->groupBy('date');
         $totalSeconds = $records->sum(fn($r) => $r->ended_at ? max(0, $r->started_at->diffInSeconds($r->ended_at)) : 0);
         \Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/mpdf-temp'));
         $company = DB::table('company_settings')->where('id', 1)->first();
@@ -74,7 +75,7 @@ class LaborRecordController extends Controller
             $employeeSignature = 'data:' . $disk->mimeType($employee->signature_path) . ';base64,' . base64_encode($disk->get($employee->signature_path));
         }
         $pdf = new Mpdf(['tempDir' => storage_path('app/mpdf-temp'), 'margin_top' => 10, 'margin_bottom' => 10]);
-        $pdf->WriteHTML(view('reports.labor-record', compact('employee', 'filters', 'records', 'totalSeconds', 'company', 'signature', 'employeeSignature'))->render());
+        $pdf->WriteHTML(view('reports.labor-record', compact('employee', 'filters', 'records', 'totalSeconds', 'company', 'signature', 'employeeSignature', 'observations'))->render());
         return response($pdf->Output('', 'S'), 200, ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="registro-laboral-' . $employee->id . '-' . $filters['from'] . '-' . $filters['to'] . '.pdf"']);
     }
 }

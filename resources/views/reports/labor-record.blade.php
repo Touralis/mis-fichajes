@@ -28,12 +28,12 @@ $recordsByDay = $records->groupBy(fn ($record) => $record->started_at->format('Y
 @endphp
 <table class="entries"><thead><tr><th width="8%">Día</th><th width="13%">Hora entrada</th><th width="13%">Hora salida</th><th width="17%">Horas ordinarias</th><th width="15%">Horas compl.</th><th width="15%">Horas extra.</th><th width="19%">Observaciones</th></tr></thead><tbody>
 @foreach(\Carbon\CarbonPeriod::create($filters['from'], $filters['to']) as $day)
-@php $dayRecords = $recordsByDay->get($day->format('Y-m-d'), collect()); @endphp
+@php $dayRecords = $recordsByDay->get($day->format('Y-m-d'), collect()); $dayNotes = ($observations ?? collect())->get($day->format('Y-m-d'), collect())->pluck('description')->implode('; '); @endphp
 @if($dayRecords->isEmpty())
-<tr><td>{{ $day->format('d/m') }}</td><td></td><td></td><td></td><td></td><td></td><td>{{ $day->isWeekend() ? 'Descanso semanal' : '' }}</td></tr>
+<tr><td>{{ $day->format('d/m') }}</td><td></td><td></td><td></td><td></td><td></td><td>{{ $dayNotes ?: ($day->isWeekend() ? 'Descanso semanal' : '') }}</td></tr>
 @else
 @foreach($dayRecords as $record)
-<tr><td>{{ $record->started_at->format('d/m') }}</td><td>{{ $record->started_at->format('H:i') }}</td><td>{{ $record->ended_at?->format('H:i') ?? 'En curso' }}</td><td>{{ $record->ended_at ? $formatDuration(max(0, $record->started_at->diffInSeconds($record->ended_at))) : '—' }}</td><td>—</td><td>—</td><td>{{ $record->ended_at && !$record->started_at->isSameDay($record->ended_at) ? 'Salida '.$record->ended_at->format('d/m') : '' }}</td></tr>
+<tr><td>{{ $record->started_at->format('d/m') }}</td><td>{{ $record->started_at->format('H:i') }}</td><td>{{ $record->ended_at?->format('H:i') ?? 'En curso' }}</td><td>{{ $record->ended_at ? $formatDuration(max(0, $record->started_at->diffInSeconds($record->ended_at))) : '—' }}</td><td>—</td><td>—</td><td>{{ collect([$loop->first ? $dayNotes : '', $record->ended_at && !$record->started_at->isSameDay($record->ended_at) ? 'Salida '.$record->ended_at->format('d/m') : ''])->filter()->implode('; ') }}</td></tr>
 @endforeach
 @endif
 @endforeach

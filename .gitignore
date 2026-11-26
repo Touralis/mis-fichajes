@@ -26,3 +26,6 @@ mobile-app/node_modules
 mobile-app/build-*.apk
 public/fichajes.apk
 *.apk
+
+# Configuraciones locales de despliegue (pueden contener contraseñas)
+/*.conf

@@ -31,7 +31,7 @@ class AttendanceController extends Controller {
    $prefix=$record ? 'end_' : 'start_';
    $location=$required ? [$prefix.'latitude'=>$data['latitude'],$prefix.'longitude'=>$data['longitude'],$prefix.'accuracy'=>$data['accuracy']] : [];
    if ($record) $record->update(['ended_at'=>now()]+$location);
-   else AttendanceRecord::create(['user_id'=>$request->user()->id,'started_at'=>now()]+$location);
+   else AttendanceRecord::create(['user_id'=>$request->user()->id,'started_at'=>now(),'origin'=>'clock']+$location);
   });
   return response()->json(['ok'=>true]);
  }

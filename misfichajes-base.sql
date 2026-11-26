@@ -115,10 +115,13 @@ CREATE TABLE `attendance_records` (
   `end_latitude` decimal(10,7) DEFAULT NULL,
   `end_longitude` decimal(10,7) DEFAULT NULL,
   `end_accuracy` decimal(10,2) DEFAULT NULL,
+  `origin` varchar(20) DEFAULT NULL,
+  `generated_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `attendance_records_user_id_started_at_index` (`user_id`,`started_at`),
+  CONSTRAINT `attendance_records_generated_by_foreign` FOREIGN KEY (`generated_by`) REFERENCES `users` (`id`),
   CONSTRAINT `attendance_records_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -138,6 +141,18 @@ CREATE TABLE `attendance_corrections` (
   KEY `attendance_corrections_actor_id_foreign` (`actor_id`),
   CONSTRAINT `attendance_corrections_actor_id_foreign` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`),
   CONSTRAINT `attendance_corrections_attendance_record_id_foreign` FOREIGN KEY (`attendance_record_id`) REFERENCES `attendance_records` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `day_observations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `date` date NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `day_observations_date_user_id_index` (`date`,`user_id`),
+  CONSTRAINT `day_observations_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `company_settings` (
@@ -171,5 +186,7 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_07_000000_add_e
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_08_000000_add_attendance_geolocation', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_09_000000_add_attendance_correction_setting', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_10_000000_add_user_signature', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_11_000000_create_day_observations', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_12_000000_add_attendance_origin', 1);
 
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
