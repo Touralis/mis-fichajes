@@ -61,6 +61,7 @@ class LaborRecordController extends Controller
         $filters['employee_id'] = $employee->id;
         $records = $this->query($request, $filters)->orderBy('started_at')->orderBy('id')->get();
         $observations = DB::table('day_observations')->whereBetween('date', [$filters['from'], $filters['to']])->where(fn($q) => $q->whereNull('user_id')->orWhere('user_id', $employee->id))->orderBy('id')->get()->groupBy('date');
+        $records = $records->reject(fn($record) => $observations->has($record->started_at->format('Y-m-d')));
         $totalSeconds = $records->sum(fn($r) => $r->ended_at ? max(0, $r->started_at->diffInSeconds($r->ended_at)) : 0);
         \Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/mpdf-temp'));
         $company = DB::table('company_settings')->where('id', 1)->first();

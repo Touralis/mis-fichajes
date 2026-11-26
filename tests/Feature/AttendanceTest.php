@@ -103,6 +103,28 @@ class AttendanceTest extends TestCase {
   $this->actingAs($ana)->deleteJson('/api/observations/'.$id)->assertForbidden();
   $this->actingAs($admin)->deleteJson('/api/observations/'.$id)->assertOk();
  }
+ public function test_observations_take_precedence_over_records_in_pdf_and_totals(): void {
+  $admin=User::factory()->create(['role'=>'admin']); $ana=User::factory()->create(); $luis=User::factory()->create();
+  AttendanceRecord::create(['user_id'=>$ana->id,'started_at'=>'2026-11-02 09:03:00','ended_at'=>'2026-11-02 14:03:00']);
+  $this->actingAs($admin)->postJson('/api/observations',['date'=>'2026-11-02','user_id'=>$ana->id,'reason'=>'Festivo'])->assertOk();
+  $this->postJson('/api/observations',['date'=>'2026-11-03','reason'=>'Vacaciones'])->assertOk();
+  AttendanceRecord::create(['user_id'=>$ana->id,'started_at'=>'2026-11-03 08:00:00','ended_at'=>'2026-11-03 12:00:00']);
+  AttendanceRecord::create(['user_id'=>$ana->id,'started_at'=>'2026-11-04 10:00:00','ended_at'=>'2026-11-04 12:00:00']);
+  AttendanceRecord::create(['user_id'=>$luis->id,'started_at'=>'2026-11-02 09:03:00','ended_at'=>'2026-11-02 14:03:00']);
+  $captured=[];
+  \Illuminate\Support\Facades\View::composer('reports.labor-record',function($view) use (&$captured){$captured=$view->getData();});
+  $url='/api/records/pdf?from=2026-11-01&to=2026-11-30&employee_id=';
+  $this->get($url.$ana->id)->assertOk();
+  $this->assertCount(1,$captured['records']); $this->assertEquals(7200,$captured['totalSeconds']);
+  $this->assertStringContainsString('Festivo',view('reports.labor-record',$captured)->render());
+  $this->get($url.$luis->id)->assertOk();
+  $this->assertCount(1,$captured['records']); $this->assertEquals(18000,$captured['totalSeconds']);
+  $id=\Illuminate\Support\Facades\DB::table('day_observations')->where('user_id',$ana->id)->value('id');
+  $this->deleteJson('/api/observations/'.$id)->assertOk();
+  $this->get($url.$ana->id)->assertOk();
+  $this->assertCount(2,$captured['records']); $this->assertEquals(25200,$captured['totalSeconds']);
+  $this->assertDatabaseCount('attendance_records',4);
+ }
  public function test_each_user_manages_only_their_own_signature(): void {
   \Illuminate\Support\Facades\Storage::fake('local');
   $ana=User::factory()->create(); $luis=User::factory()->create();
