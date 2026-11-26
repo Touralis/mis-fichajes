@@ -1,0 +1,19 @@
+ACTUALIZAR MIS FICHAJES
+
+Las firmas nuevas de empresa y trabajadores se guardan en la base de datos.
+Antes de sustituir la aplicación, guarda una copia de seguridad de la base de
+datos, de storage/app/private y del archivo .env de producción. Mantener una
+copia de storage protege también otros archivos que pueda usar la aplicación.
+
+1. Detén temporalmente el acceso y crea las copias de seguridad.
+2. Sustituye los archivos de la aplicación por los del nuevo ZIP.
+3. Restaura el .env original en la raíz de la aplicación y, si corresponde,
+   la carpeta storage/app/private. No publiques ninguno dentro de public.
+4. Aplica por separado los SQL de actualización correspondientes a la versión.
+   No importes misfichajes-base.sql sobre una base de datos existente.
+5. Comprueba los permisos de storage y bootstrap/cache, y verifica la aplicación
+   y un informe PDF antes de volver a habilitar el acceso.
+
+El .env original conserva APP_KEY y otros ajustes: no lo sustituyas por el
+archivo generado para una instalación nueva. Si necesitas un ajuste nuevo,
+añádelo al .env original sin cambiar APP_KEY.

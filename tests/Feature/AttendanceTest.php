@@ -107,14 +107,14 @@ class AttendanceTest extends TestCase {
   \Illuminate\Support\Facades\Storage::fake('local');
   $ana=User::factory()->create(); $luis=User::factory()->create();
   $this->actingAs($ana)->postJson('/api/profile/signature',['signature'=>\Illuminate\Http\UploadedFile::fake()->image('firma.png')])->assertOk();
-  $path=$ana->fresh()->signature_path;
-  \Illuminate\Support\Facades\Storage::disk('local')->assertExists($path);
+  $data=$ana->fresh()->signature_data;
+  $this->assertNotEmpty($data);
   $this->get('/api/profile/signature')->assertOk();
   $this->actingAs($luis)->get('/api/profile/signature')->assertNotFound();
   $this->deleteJson('/api/profile/signature')->assertOk();
-  \Illuminate\Support\Facades\Storage::disk('local')->assertExists($path);
+  $this->assertSame($data, $ana->fresh()->signature_data);
   $this->actingAs($ana)->deleteJson('/api/profile/signature')->assertOk();
-  \Illuminate\Support\Facades\Storage::disk('local')->assertMissing($path);
+  $this->assertNull($ana->fresh()->signature_data);
  }
  public function test_company_settings_signature_and_pdf_are_protected_and_persisted(): void {
   \Illuminate\Support\Facades\Storage::fake('local');

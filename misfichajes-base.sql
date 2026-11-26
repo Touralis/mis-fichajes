@@ -24,6 +24,7 @@ CREATE TABLE `users` (
   `daily_hours` decimal(4,2) NOT NULL DEFAULT 8.00,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `signature_path` varchar(255) DEFAULT NULL,
+  `signature_data` longtext DEFAULT NULL,
   `identity_number` varchar(50) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `social_security_number` varchar(50) DEFAULT NULL,
@@ -164,6 +165,8 @@ CREATE TABLE `company_settings` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `signature_path` varchar(255) DEFAULT NULL,
+  `signature_data` longtext DEFAULT NULL,
+  `signature_mime` varchar(32) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `allow_attendance_generation` tinyint(1) NOT NULL DEFAULT 0,
@@ -194,3 +197,5 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_11_26_000000_add_r
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_11_26_000001_convert_attendance_ids_to_uuid', 1);
+
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_11_26_000002_store_signatures_in_database', 1);

@@ -64,16 +64,8 @@ class LaborRecordController extends Controller
         $totalSeconds = $records->sum(fn($r) => $r->ended_at ? max(0, $r->started_at->diffInSeconds($r->ended_at)) : 0);
         \Illuminate\Support\Facades\File::ensureDirectoryExists(storage_path('app/mpdf-temp'));
         $company = DB::table('company_settings')->where('id', 1)->first();
-        $signature = null;
-        if ($company?->signature_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($company->signature_path)) {
-            $disk = \Illuminate\Support\Facades\Storage::disk('local');
-            $signature = 'data:' . $disk->mimeType($company->signature_path) . ';base64,' . base64_encode($disk->get($company->signature_path));
-        }
-        $employeeSignature = null;
-        if ($employee->signature_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($employee->signature_path)) {
-            $disk = \Illuminate\Support\Facades\Storage::disk('local');
-            $employeeSignature = 'data:' . $disk->mimeType($employee->signature_path) . ';base64,' . base64_encode($disk->get($employee->signature_path));
-        }
+        $signature = $company?->signature_data ? 'data:'.$company->signature_mime.';base64,'.$company->signature_data : null;
+        $employeeSignature = $employee->signature_data ? 'data:image/png;base64,'.$employee->signature_data : null;
         $pdf = new Mpdf(['tempDir' => storage_path('app/mpdf-temp'), 'margin_top' => 10, 'margin_bottom' => 10]);
         $pdf->WriteHTML(view('reports.labor-record', compact('employee', 'filters', 'records', 'totalSeconds', 'company', 'signature', 'employeeSignature', 'observations'))->render());
         return response($pdf->Output('', 'S'), 200, ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment; filename="registro-laboral-' . $employee->id . '-' . $filters['from'] . '-' . $filters['to'] . '.pdf"']);
