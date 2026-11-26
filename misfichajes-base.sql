@@ -105,7 +105,7 @@ CREATE TABLE `failed_jobs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `attendance_records` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `id` char(36) NOT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
   `started_at` timestamp NOT NULL,
   `ended_at` timestamp NULL DEFAULT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE `attendance_records` (
 
 CREATE TABLE `attendance_corrections` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `attendance_record_id` bigint(20) unsigned NOT NULL,
+  `attendance_record_id` char(36) NOT NULL,
   `actor_id` bigint(20) unsigned NOT NULL,
   `previous_started_at` timestamp NOT NULL,
   `previous_ended_at` timestamp NULL DEFAULT NULL,
@@ -148,6 +148,7 @@ CREATE TABLE `day_observations` (
   `user_id` bigint(20) unsigned DEFAULT NULL,
   `date` date NOT NULL,
   `description` varchar(255) NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -188,5 +189,8 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_09_000000_add_a
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_10_000000_add_user_signature', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_11_000000_create_day_observations', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_12_000000_add_attendance_origin', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_11_26_000000_add_reason_to_day_observations', 1);
 
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_11_26_000001_convert_attendance_ids_to_uuid', 1);

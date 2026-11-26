@@ -28,7 +28,7 @@ $recordsByDay = $records->groupBy(fn ($record) => $record->started_at->format('Y
 @endphp
 <table class="entries"><thead><tr><th width="8%">Día</th><th width="13%">Hora entrada</th><th width="13%">Hora salida</th><th width="17%">Horas ordinarias</th><th width="15%">Horas compl.</th><th width="15%">Horas extra.</th><th width="19%">Observaciones</th></tr></thead><tbody>
 @foreach(\Carbon\CarbonPeriod::create($filters['from'], $filters['to']) as $day)
-@php $dayRecords = $recordsByDay->get($day->format('Y-m-d'), collect()); $dayNotes = ($observations ?? collect())->get($day->format('Y-m-d'), collect())->pluck('description')->implode('; '); @endphp
+@php $dayRecords = $recordsByDay->get($day->format('Y-m-d'), collect()); $dayNotes = ($observations ?? collect())->get($day->format('Y-m-d'), collect())->map(fn ($note) => implode(': ', array_filter([$note->reason, $note->description], fn ($value) => $value !== null && $value !== '')))->implode('; '); @endphp
 @if($dayRecords->isEmpty())
 <tr><td>{{ $day->format('d/m') }}</td><td></td><td></td><td></td><td></td><td></td><td>{{ $dayNotes ?: ($day->isWeekend() ? 'Descanso semanal' : '') }}</td></tr>
 @else

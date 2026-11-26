@@ -88,17 +88,17 @@ class AttendanceTest extends TestCase {
  public function test_day_observations_are_managed_only_by_admin_and_scoped_in_report(): void {
   $admin=User::factory()->create(); $admin->forceFill(['role'=>'admin'])->save();
   $ana=User::factory()->create(); $luis=User::factory()->create();
-  $this->actingAs($ana)->postJson('/api/observations',['date'=>'2026-11-02','description'=>'Vacaciones'])->assertForbidden();
+  $this->actingAs($ana)->postJson('/api/observations',['date'=>'2026-11-02','reason'=>'Vacaciones','description'=>'Vacaciones'])->assertForbidden();
   $this->getJson('/api/observations')->assertForbidden();
-  $this->actingAs($admin)->postJson('/api/observations',['date'=>'2026-11-02','user_id'=>$ana->id,'description'=>'Vacaciones'])->assertOk();
-  $this->postJson('/api/observations',['date'=>'2026-11-03','description'=>'Festivo'])->assertOk();
+  $this->actingAs($admin)->postJson('/api/observations',['date'=>'2026-11-02','user_id'=>$ana->id,'reason'=>'Vacaciones','description'=>'Vacaciones'])->assertOk();
+  $this->postJson('/api/observations',['date'=>'2026-11-03','reason'=>'Festivo'])->assertOk();
   $this->getJson('/api/observations')->assertOk()->assertJsonCount(2);
   $captured=[];
   \Illuminate\Support\Facades\View::composer('reports.labor-record',function($view) use (&$captured){$captured=$view->getData()['observations']->flatten()->pluck('description')->all();});
   $this->get('/api/records/pdf?from=2026-11-01&to=2026-11-30&employee_id='.$ana->id)->assertOk();
-  $this->assertEqualsCanonicalizing(['Vacaciones','Festivo'],$captured);
+  $this->assertEqualsCanonicalizing(['Vacaciones',''],$captured);
   $this->get('/api/records/pdf?from=2026-11-01&to=2026-11-30&employee_id='.$luis->id)->assertOk();
-  $this->assertEquals(['Festivo'],$captured);
+  $this->assertEquals([''],$captured);
   $id=\Illuminate\Support\Facades\DB::table('day_observations')->where('description','Vacaciones')->value('id');
   $this->actingAs($ana)->deleteJson('/api/observations/'.$id)->assertForbidden();
   $this->actingAs($admin)->deleteJson('/api/observations/'.$id)->assertOk();

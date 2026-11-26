@@ -10,8 +10,8 @@ class DayObservationController extends Controller {
  }
  public function store(Request $request) {
   $this->admin($request);
-  $data=$request->validate(['date'=>'required|date_format:Y-m-d','user_id'=>'nullable|integer|exists:users,id','description'=>'required|string|max:255']);
-  DB::table('day_observations')->insert(['date'=>$data['date'],'user_id'=>$data['user_id']??null,'description'=>trim($data['description']),'created_at'=>now(),'updated_at'=>now()]);
+  $data=$request->validate(['date'=>'required|date_format:Y-m-d','user_id'=>'nullable|integer|exists:users,id','reason'=>'required|in:Vacaciones,Festivo,Permiso,Baja médica,Ausencia,Otro','description'=>'nullable|string|max:255']);
+  DB::table('day_observations')->insert(['date'=>$data['date'],'user_id'=>$data['user_id']??null,'reason'=>$data['reason'],'description'=>trim($data['description']??''),'created_at'=>now(),'updated_at'=>now()]);
   return response()->json(['ok'=>true]);
  }
  public function destroy(Request $request, int $id) {

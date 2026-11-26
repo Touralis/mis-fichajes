@@ -21,3 +21,5 @@ img.brand-icon{background:#fff;border-radius:8px;padding:3px}.hero-card .status{
 .signature-pad{margin:14px 0}.signature-pad canvas{display:block;width:100%;max-width:600px;height:180px;background:#fff;border:1px solid #cbdad0;border-radius:8px;touch-action:none;cursor:crosshair}.signature-pad button{margin-top:10px}
 
 .observation-description{margin-top:18px}.observation-list{margin-top:20px}.observation-text{white-space:normal;min-width:200px;overflow-wrap:anywhere}
+
+.observation-description{display:block}.observation-description textarea{display:block;width:100%;margin-top:8px;padding:12px 14px;border:1px solid #c5dff4;border-radius:8px;resize:vertical;font:inherit;color:inherit;background:transparent}.optional{font-weight:400;color:#82958a}.settings-form > .report-hint{padding:10px 0 0}
