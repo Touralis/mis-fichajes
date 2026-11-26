@@ -23,6 +23,7 @@ CREATE TABLE `users` (
   `position` varchar(255) DEFAULT NULL,
   `daily_hours` decimal(4,2) NOT NULL DEFAULT 8.00,
   `active` tinyint(1) NOT NULL DEFAULT 1,
+  `signature_path` varchar(255) DEFAULT NULL,
   `identity_number` varchar(50) DEFAULT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `social_security_number` varchar(50) DEFAULT NULL,
@@ -169,5 +170,6 @@ INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_06_000000_remov
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_07_000000_add_employee_phone', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_08_000000_add_attendance_geolocation', 1);
 INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_09_000000_add_attendance_correction_setting', 1);
+INSERT INTO `migrations` (`migration`, `batch`) VALUES ('2026_01_10_000000_add_user_signature', 1);
 
 INSERT INTO `users` (`name`, `email`, `password`, `role`, `active`, `created_at`, `updated_at`) VALUES ('Admin', 'admin@gmail.com', '$2y$10$Y7rsfTOOgHSlOYKOxBNvm.i8lNFeG0u2vr8IMiIe/nV3XtF/qA.Re', 'admin', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

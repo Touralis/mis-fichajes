@@ -85,6 +85,19 @@ class AttendanceTest extends TestCase {
   \Illuminate\Support\Facades\DB::table('company_settings')->where('id',1)->update(['allow_attendance_correction'=>false]);
   $this->putJson('/api/records/'.$record->id,$payload)->assertForbidden();
  }
+ public function test_each_user_manages_only_their_own_signature(): void {
+  \Illuminate\Support\Facades\Storage::fake('local');
+  $ana=User::factory()->create(); $luis=User::factory()->create();
+  $this->actingAs($ana)->postJson('/api/profile/signature',['signature'=>\Illuminate\Http\UploadedFile::fake()->image('firma.png')])->assertOk();
+  $path=$ana->fresh()->signature_path;
+  \Illuminate\Support\Facades\Storage::disk('local')->assertExists($path);
+  $this->get('/api/profile/signature')->assertOk();
+  $this->actingAs($luis)->get('/api/profile/signature')->assertNotFound();
+  $this->deleteJson('/api/profile/signature')->assertOk();
+  \Illuminate\Support\Facades\Storage::disk('local')->assertExists($path);
+  $this->actingAs($ana)->deleteJson('/api/profile/signature')->assertOk();
+  \Illuminate\Support\Facades\Storage::disk('local')->assertMissing($path);
+ }
  public function test_company_settings_signature_and_pdf_are_protected_and_persisted(): void {
   \Illuminate\Support\Facades\Storage::fake('local');
   $admin=User::factory()->create(); $admin->forceFill(['role'=>'admin'])->save(); $employee=User::factory()->create();

@@ -80,6 +80,10 @@ const overrides = `\n/* Paleta personalizada: contraste independiente para super
 .clock-button.clock-out{background:#e78179;color:#3e1c1b}
 .clock-button.clock-out:hover{background:#d96c64;color:#3e1c1b}
 img.brand-icon{background:#ffffff}
+.aside-art{background:#ffffff;color:#263b30;border-color:#ffffff}
+.aside-art .art-clock,.aside-art .art-label{color:#263b30}
+.aside-art .art-line{background:#dce6df}
+.aside-art .online{background:#55a56b}
 .wide{background:${primary};color:${primaryText}}
 .login-aside .accent,.login-aside .brand-dot,.login-copy em,.art-clock span{color:${contrast(accent, primary) >= 4.5 ? accent : primaryText}}
 `;

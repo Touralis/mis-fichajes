@@ -53,8 +53,10 @@ class LaborRecordController extends Controller {
   $company=DB::table('company_settings')->where('id',1)->first();
   $signature=null;
   if ($company?->signature_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($company->signature_path)) { $disk=\Illuminate\Support\Facades\Storage::disk('local'); $signature='data:'.$disk->mimeType($company->signature_path).';base64,'.base64_encode($disk->get($company->signature_path)); }
+  $employeeSignature=null;
+  if ($employee->signature_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($employee->signature_path)) { $disk=\Illuminate\Support\Facades\Storage::disk('local'); $employeeSignature='data:'.$disk->mimeType($employee->signature_path).';base64,'.base64_encode($disk->get($employee->signature_path)); }
   $pdf=new Mpdf(['tempDir'=>storage_path('app/mpdf-temp')]);
-  $pdf->WriteHTML(view('reports.labor-record',compact('employee','filters','records','totalSeconds','company','signature'))->render());
+  $pdf->WriteHTML(view('reports.labor-record',compact('employee','filters','records','totalSeconds','company','signature','employeeSignature'))->render());
   return response($pdf->Output('', 'S'),200,['Content-Type'=>'application/pdf','Content-Disposition'=>'attachment; filename="registro-laboral-'.$employee->id.'-'.$filters['from'].'-'.$filters['to'].'.pdf"']);
  }
 }
